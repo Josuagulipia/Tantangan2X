@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Petualangan Mencari Harta Pengetahuan</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root{
+  --bg-deep:#0c2b2a;
+  --bg-deep2:#153b34;
+  --forest:#1f5c4a;
+  --forest-light:#2f7d5e;
+  --gold:#e0ac4f;
+  --gold-bright:#ffce6b;
+  --parchment:#f6efdc;
+  --parchment-dark:#e6d9b8;
+  --ink:#2c2013;
+  --mystic:#7a5cc0;
+  --mystic-dark:#4d3980;
+  --danger:#c1483c;
+  --ok:#3f9d6b;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --radius:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+html,body{margin:0;padding:0;height:100%;}
+:focus-visible{outline:3px solid var(--gold-bright);outline-offset:2px;}
+body{
+  font-family:'Nunito',sans-serif;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(224,172,79,.10), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(122,92,192,.14), transparent 45%),
+    linear-gradient(160deg, var(--bg-deep) 0%, var(--bg-deep2) 55%, #0a2320 100%);
+  color:var(--parchment);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+#app{min-height:100vh;display:flex;flex-direction:column;}
+h1,h2,h3,.display{font-family:'Cinzel',serif;letter-spacing:.02em;}
+.mono{font-family:'JetBrains Mono',monospace;}
+button{font-family:'Nunito',sans-serif;cursor:pointer;border:none;}
+::selection{background:var(--gold);color:var(--ink);}
+
+/* ---------- layout helpers ---------- */
+.screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;min-height:100vh;position:relative;}
+.wrap{width:100%;max-width:920px;margin:0 auto;}
+.card{
+  background:linear-gradient(180deg, var(--parchment) 0%, var(--parchment-dark) 100%);
+  color:var(--ink);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:28px;
+  position:relative;
+  border:3px solid rgba(224,172,79,.55);
+}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;justify-content:center;
+  padding:clamp(12px,2.5vw,14px) clamp(18px,4vw,26px);border-radius:14px;font-weight:800;
+  font-size:clamp(14px,3vw,16px);
+  transition:transform .12s ease, box-shadow .12s ease, filter .12s;
+  min-height:48px;max-width:100%;
+}
+.btn:active{transform:scale(.96);}
+.btn-gold{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:var(--ink);box-shadow:0 6px 0 #a97a28, 0 10px 18px rgba(0,0,0,.35);}
+.btn-gold:hover{filter:brightness(1.06);}
+.btn-forest{background:linear-gradient(180deg,var(--forest-light),var(--forest));color:#eafff2;box-shadow:0 6px 0 #123b2d,0 10px 18px rgba(0,0,0,.3);}
+.btn-mystic{background:linear-gradient(180deg,#9a7bde,var(--mystic));color:#fff;box-shadow:0 6px 0 #33265c,0 10px 18px rgba(0,0,0,.3);}
+.btn-outline{background:transparent;border:2px solid var(--parchment-dark);color:var(--parchment);box-shadow:none;}
+.btn-outline:hover{background:rgba(255,255,255,.08);}
+.btn-danger{background:linear-gradient(180deg,#e0685a,var(--danger));color:#fff;box-shadow:0 6px 0 #7c2c22;}
+.btn-sm{padding:9px 14px;font-size:13px;min-height:40px;border-radius:10px;}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.3);box-shadow:none;transform:none;}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.center{text-align:center;}
+.spacer{flex:1;}
+input[type=text],input[type=number],textarea,select{
+  font-family:'Nunito',sans-serif;padding:12px 14px;border-radius:10px;border:2px solid var(--parchment-dark);
+  background:#fffdf6;color:var(--ink);font-size:15px;width:100%;
+}
+textarea{resize:vertical;min-height:120px;}
+label.field-label{font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#5c4a2c;margin-bottom:6px;display:block;}
+
+/* ---------- top bar (in-game) ---------- */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;row-gap:8px;
+  padding:10px 16px;background:rgba(10,30,28,.85);backdrop-filter:blur(6px);
+  border-bottom:2px solid rgba(224,172,79,.35);width:100%;max-width:100vw;
+}
+.topbar .chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);padding:6px 12px;border-radius:999px;font-weight:800;font-size:clamp(12px,2.6vw,14px);white-space:nowrap;}
+.hearts{letter-spacing:2px;}
+.topbar .name{font-weight:800;color:var(--gold-bright);}
+
+/* ---------- splash ---------- */
+.splash-title{font-size:clamp(30px,6vw,54px);text-align:center;color:var(--gold-bright);text-shadow:0 3px 0 rgba(0,0,0,.4),0 0 40px rgba(224,172,79,.35);margin:0 0 6px;}
+.splash-sub{text-align:center;color:var(--parchment-dark);font-size:clamp(14px,2.2vw,18px);margin-bottom:34px;max-width:640px;}
+.emoji-row{font-size:38px;text-align:center;margin-bottom:18px;letter-spacing:6px;animation:float 3.5s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.compass{width:120px;height:120px;margin:0 auto 20px;animation:spin 12s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- map ---------- */
+.map-title{color:var(--gold-bright);text-align:center;margin:6px 0 4px;}
+.map-story{color:var(--parchment-dark);text-align:center;max-width:680px;margin:0 auto 18px;font-size:14px;line-height:1.6;}
+.path-svg{width:100%;max-width:760px;display:block;margin:0 auto;}
+.map-scroll{overflow-x:hidden;padding:10px 6px 40px;}
+.node{cursor:pointer;transition:transform .15s;}
+.node:hover{transform:scale(1.06);}
+.node.locked{cursor:not-allowed;}
+.node-label{font-family:'Cinzel',serif;font-weight:700;fill:var(--parchment);}
+
+/* ---------- level scene ---------- */
+.scene{width:100%;max-width:820px;margin:0 auto;padding:18px 14px 60px;}
+.scene-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.scene-header .lvl-badge{font-size:34px;}
+.progress-track{height:14px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;border:2px solid rgba(224,172,79,.4);}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-bright));transition:width .35s ease;}
+.qcard{margin-top:16px;}
+.opt-btn{
+  display:block;width:100%;text-align:left;padding:16px 18px;margin-bottom:12px;border-radius:14px;min-height:48px;
+  background:#fffdf6;border:2.5px solid var(--parchment-dark);color:var(--ink);font-weight:700;font-size:clamp(14px,3vw,15px);
+  transition:all .15s;word-break:break-word;
+}
+.opt-btn:hover{border-color:var(--gold);background:#fff8e8;}
+.opt-btn.correct{background:#defbe8;border-color:var(--ok);color:#175c37;}
+.opt-btn.wrong{background:#fde3e0;border-color:var(--danger);color:#7c2c22;}
+.opt-btn.dim{opacity:.55;}
+.sentence-opt{display:block;padding:12px 14px;margin-bottom:8px;border-radius:10px;background:#fffdf6;border:2px solid var(--parchment-dark);cursor:pointer;line-height:1.5;}
+.sentence-opt:hover{border-color:var(--gold);}
+.tile{display:inline-flex;padding:10px 16px;margin:4px;border-radius:10px;background:var(--gold);color:var(--ink);font-weight:800;cursor:pointer;box-shadow:0 4px 0 #a97a28;}
+.tile.used{opacity:.3;pointer-events:none;}
+.build-zone{min-height:56px;border:2px dashed var(--parchment-dark);border-radius:12px;padding:10px;margin:12px 0;background:rgba(255,255,255,.5);}
+.match-col{display:flex;flex-direction:column;gap:10px;}
+.match-item{padding:12px 14px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#fffdf6;border:2.5px solid var(--parchment-dark);cursor:pointer;font-weight:700;text-align:center;}
+.match-item.selected{border-color:var(--mystic);background:#efe7ff;}
+.match-item.paired{border-color:var(--ok);background:#defbe8;opacity:.85;cursor:default;}
+.match-item.shake{animation:shake .3s;border-color:var(--danger)!important;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.tf-btns{display:flex;gap:16px;margin-top:10px;}
+.tf-btns .btn{flex:1;font-size:20px;}
+.hint-box{margin-top:14px;background:#fff3d6;border:2px solid var(--gold);border-radius:12px;padding:12px 14px;font-size:14px;color:#5c4207;}
+.feedback{margin-top:14px;padding:14px 16px;border-radius:12px;font-weight:700;}
+.feedback.ok{background:#defbe8;color:#175c37;border:2px solid var(--ok);}
+.feedback.bad{background:#fde3e0;color:#7c2c22;border:2px solid var(--danger);}
+.timer-pill{font-family:'JetBrains Mono',monospace;font-weight:700;background:rgba(0,0,0,.25);padding:6px 12px;border-radius:999px;}
+.timer-pill.low{background:var(--danger);color:#fff;animation:pulse .6s infinite;}
+@keyframes pulse{50%{opacity:.6}}
+.maze-track{display:flex;align-items:center;gap:6px;overflow-x:auto;padding:14px 6px;background:rgba(0,0,0,.2);border-radius:14px;margin-bottom:14px;}
+.gate{min-width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:16px;position:relative;}
+.gate.done{background:var(--ok);}
+.gate.current{background:var(--gold);box-shadow:0 0 0 4px rgba(224,172,79,.35);}
+.gate.checkpoint::after{content:'🚩';position:absolute;top:-20px;font-size:14px;}
+.evidence-box{background:#fff8e8;border:2px solid var(--gold);border-radius:12px;padding:14px;margin-bottom:14px;font-size:14px;line-height:1.6;}
+.evidence-box ul{margin:6px 0 0 18px;padding:0;}
+
+/* ---------- modals ---------- */
+.overlay{position:fixed;inset:0;background:rgba(6,20,18,.78);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;}
+.modal{background:linear-gradient(180deg,var(--parchment),var(--parchment-dark));color:var(--ink);border-radius:22px;padding:32px 26px;max-width:440px;width:100%;text-align:center;box-shadow:var(--shadow);border:3px solid var(--gold);animation:pop .35s ease;}
+@keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+.key-glow{font-size:60px;filter:drop-shadow(0 0 18px var(--gold));animation:keyspin .9s ease;}
+@keyframes keyspin{0%{transform:rotate(-20deg) scale(.5);opacity:0}60%{transform:rotate(10deg) scale(1.15)}100%{transform:rotate(0) scale(1);opacity:1}}
+
+/* ---------- toast notifikasi ---------- */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:linear-gradient(180deg,var(--forest-light),var(--forest));color:#eafff2;padding:13px 22px;border-radius:14px;font-weight:800;box-shadow:0 10px 26px rgba(0,0,0,.4);z-index:300;opacity:0;transition:opacity .25s ease, transform .25s ease;display:flex;align-items:center;gap:8px;max-width:92vw;text-align:center;font-size:14px;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.err{background:linear-gradient(180deg,#e0685a,var(--danger));}
+
+/* ---------- sertifikat ---------- */
+.cert-modal{max-width:700px;background:#fffdf6;color:var(--ink);border:none;padding:0;box-shadow:0 25px 70px rgba(0,0,0,.5);}
+.cert-border{border:10px solid var(--gold);outline:2px solid var(--gold-bright);outline-offset:-18px;padding:clamp(22px,5vw,44px) clamp(18px,5vw,34px);text-align:center;background:linear-gradient(160deg,#fffdf6,#fbf1d8);}
+.cert-ornament{font-size:42px;margin-bottom:4px;}
+.cert-title{font-family:'Cinzel',serif;font-size:clamp(20px,4.2vw,30px);letter-spacing:.08em;color:#8a6a1f;margin:0 0 8px;}
+.cert-sub{font-size:13px;color:#5c4a2c;margin:0;text-transform:uppercase;letter-spacing:.06em;}
+.cert-name{font-family:'Cinzel',serif;font-size:clamp(24px,5.5vw,36px);color:var(--ink);margin:10px 0;border-bottom:2px solid var(--gold);display:inline-block;padding-bottom:6px;word-break:break-word;}
+.cert-kelas{margin:0 0 12px;color:#5c4a2c;font-weight:700;font-size:13px;}
+.cert-body{font-size:14px;line-height:1.7;margin:14px auto 22px;max-width:520px;}
+.cert-stats{display:flex;justify-content:center;gap:clamp(14px,4vw,34px);flex-wrap:wrap;margin-bottom:26px;}
+.cert-stats div{font-size:13px;color:#5c4a2c;}
+.cert-stats b{font-size:20px;color:#8a6a1f;display:block;font-family:'Cinzel',serif;}
+.cert-footer{display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;flex-wrap:wrap;gap:16px;text-align:left;}
+.cert-date{font-size:12px;color:#5c4a2c;align-self:flex-end;}
+.cert-sign{text-align:center;}
+.cert-sign-line{font-family:'Cinzel',serif;font-weight:700;border-top:2px solid var(--ink);padding-top:6px;min-width:200px;font-size:14px;}
+.cert-sign-role{font-size:11px;color:#5c4a2c;}
+.cert-actions{padding:16px 18px;background:rgba(0,0,0,.04);}
+@media print{
+  body *{visibility:hidden;}
+  #certPrintArea, #certPrintArea *{visibility:visible;}
+  #certPrintArea{position:fixed;left:0;top:0;width:100%;margin:0;box-shadow:none;}
+  .cert-actions{display:none!important;}
+  .overlay{background:none!important;position:static!important;}
+}
+
+/* ---------- badges/achievements ---------- */
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;}
+.badge{background:#fffdf6;border:2.5px solid var(--parchment-dark);border-radius:14px;padding:16px 10px;text-align:center;}
+.badge.locked{opacity:.35;filter:grayscale(1);}
+.badge .ic{font-size:34px;}
+
+/* ---------- teacher ---------- */
+.teach-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.teach-tab{padding:10px 16px;border-radius:10px;background:rgba(255,255,255,.08);color:var(--parchment);font-weight:700;}
+.teach-tab.active{background:var(--gold);color:var(--ink);}
+table.data{width:100%;border-collapse:collapse;font-size:13px;}
+table.data th,table.data td{padding:8px 10px;border-bottom:1px solid var(--parchment-dark);text-align:left;}
+table.data th{color:#5c4a2c;text-transform:uppercase;font-size:11px;letter-spacing:.05em;}
+.qedit-item{border:2px solid var(--parchment-dark);border-radius:12px;padding:12px;margin-bottom:10px;background:#fffdf6;}
+.small-muted{color:#5c4a2c;font-size:12px;opacity:.8;}
+.toggle{display:inline-flex;align-items:center;gap:8px;}
+.switch{width:46px;height:26px;border-radius:999px;background:#bbb;position:relative;transition:.2s;}
+.switch.on{background:var(--ok);}
+.switch::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.2s;}
+.switch.on::after{left:23px;}
+
+/* ---------- responsivitas: HP, tablet, laptop, TV interaktif ---------- */
+@media (max-width:640px){
+  .card{padding:18px;}
+  .scene-header{gap:8px;}
+  .screen{padding:16px 10px;}
+  .tf-btns .btn{font-size:17px;}
+}
+@media (max-width:380px){
+  .card{padding:14px;}
+  .topbar{padding:8px 10px;gap:8px;}
+  .topbar .chip{padding:5px 9px;}
+  .btn-sm{padding:7px 10px;font-size:12px;}
+  .modal{padding:24px 18px;}
+}
+/* layar pendek / orientasi landscape di HP: kurangi padding vertikal supaya konten tidak terpotong */
+@media (max-height:480px) and (orientation:landscape){
+  .screen{padding:10px 16px;min-height:auto;}
+  .scene{padding:10px 14px 30px;}
+  .card{padding:16px;}
+  .emoji-row{margin-bottom:8px;}
+  .splash-sub{margin-bottom:14px;}
+}
+/* tablet */
+@media (min-width:641px) and (max-width:1024px){
+  .wrap,.scene{max-width:88vw;}
+}
+/* layar besar / TV interaktif: perbesar elemen agar tetap nyaman dilihat & disentuh dari jarak jauh */
+@media (min-width:1400px){
+  .wrap,.scene{max-width:1100px;}
+}
+@media (min-width:1800px){
+  body{font-size:19px;}
+  .btn{min-height:60px;font-size:19px;padding:16px 32px;}
+  .opt-btn{padding:20px 22px;font-size:19px;}
+  .topbar .chip{font-size:18px;padding:10px 18px;}
+}
+/* pastikan tidak ada elemen yang keluar dari layar pada ukuran manapun */
+img,svg{max-width:100%;height:auto;}
+</style>
+</head>
+<body>
+<div id="app"><div class="screen"><div class="center">Memuat petualangan…</div></div></div>
+
+<script>
+/* ======================================================================
+   PETUALANGAN MENCARI HARTA PENGETAHUAN
+   Single-file educational adventure game.
+   ====================================================================== */
+
+/* ---------------- storage helpers ----------------------------------------
+   Prioritas: window.storage (tersedia saat game dijalankan di dalam Claude,
+   progres tersimpan ke akun & tersinkron lintas perangkat).
+   Fallback : localStorage (dipakai otomatis saat file .html ini diunduh dan
+   dibuka langsung di browser / offline, tempat window.storage tidak ada).
+   Fallback hanya menyimpan di browser/perangkat itu saja. --------------- */
+function hasCloudStorage(){
+  return typeof window.storage === 'object' && window.storage && typeof window.storage.get === 'function';
+}
+function lsKey(key, shared){ return 'phpgame:'+(shared?'shared:':'local:')+key; }
+async function sGet(key, shared=false){
+  if(hasCloudStorage()){
+    try{ const r = await window.storage.get(key, shared); return r ? JSON.parse(r.value) : null; }
+    catch(e){ /* lanjut ke fallback di bawah */ }
+  }
+  try{ const raw = localStorage.getItem(lsKey(key, shared)); return raw ? JSON.parse(raw) : null; }
+  catch(e){ return null; }
+}
+async function sSet(key, value, shared=false){
+  if(hasCloudStorage()){
+    try{ await window.storage.set(key, JSON.stringify(value), shared); return true; }
+    catch(e){ /* lanjut ke fallback di bawah */ }
+  }
+  try{ localStorage.setItem(lsKey(key, shared), JSON.stringify(value)); return true; }
+  catch(e){ console.error('storage set failed', key, e); return false; }
+}
+async function sList(prefix, shared=false){
+  if(hasCloudStorage()){
+    try{ const r = await window.storage.list(prefix, shared); return r ? r.keys : []; }
+    catch(e){ /* lanjut ke fallback di bawah */ }
+  }
+  try{
+    const nsPrefix = lsKey(prefix, shared);
+    const nsRoot = lsKey('', shared);
+    const out = [];
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k && k.indexOf(nsPrefix)===0) out.push(k.slice(nsRoot.length));
+    }
+    return out;
+  }catch(e){ return []; }
+}
+
+/* ---------------- default content (contoh materi & soal) -------------- */
+const DEFAULT_MATERI = {
+  judul: "Perancangan dan Produksi Kerajinan dengan Inspirasi Objek Budaya Lokal",
+  isi: `Perancangan dan produksi didasari oleh data yang telah diperoleh melalui Tugas 1 tentang Ragam Objek Budaya Lokal dan Tugas 2 tentang Identifikasi Ragam Material dan Teknik produksi di lingkungan sekitar. Objek budaya lokal dan material serta teknik khas daerah merupakan potensi yang harus dikembangkan sehingga lestari dan menjadi manfaat bagi daerah. Proses perancangan kerajinan diawali dengan pemilihan sumber inspirasi dan pencarian ide produk kerajinan, pembuatan sketsa ide, pembuatan studi model kerajinan, dilanjutkan dengan pembuatan petunjuk produksi. Objek budaya lokal dapat berupa objek dua dimensi seperti relief dan motif, atau tiga dimensi seperti bangunan, alat musik, dan senjata.
+
+1. Pencarian Ide Produk: Ide dapat muncul secara tidak berurutan maupun utuh. Untuk memudahkan pencarian ide, pikirkan: objek budaya lokal apa yang menjadi inspirasi, produk apa yang dibuat, siapa penggunanya, bahan apa yang dipakai, warna/motif apa, teknik apa, proses dan alat apa. Pertanyaan tersebut didiskusikan lewat brainstorming, di mana setiap anggota bebas mengeluarkan ide sebanyak-banyaknya tanpa takut salah.
+
+2. Membuat Gambar/Sketsa: Ide digambarkan agar yang abstrak menjadi berwujud, sebaiknya menggunakan pensil/spidol/bolpoin dan menghindari penghapus, menarik garis tipis dahulu lalu menegaskannya.
+
+3. Pilih Ide Terbaik: Setelah banyak sketsa dibuat, dipertimbangkan ide mana yang paling baik, menyenangkan, dan memungkinkan untuk dibuat.
+
+4. Prototyping / Studi Model: Sketsa dua dimensi perlu diuji dalam format tiga dimensi melalui studi model, yang dapat memakai material sebenarnya atau bukan.
+
+5. Perencanaan Produksi: Tahap membuat rencana proses produksi, dengan prosedur dan langkah kerja yang jelas dan detail agar produksi mudah dan terencana.`
+};
+
+// Question schema by type:
+// mc: {q, options:[..4], answer:idx, hint}
+// sentence: {paragraph, q, sentences:[..], answer:idx, hint}
+// riddle: {clues:[..], options:[..4], answer:idx, hint}
+// scramble: {words:[..scrambled], correct:[..in order], hint}
+// matching: {pairs:[{term,def}], hint}
+// tf: {statement, answer:bool, hint}
+// maze: {gates:[ {q,options,answer} ], hint}
+// detective: {evidence:[..], q, options, answer, hint}
+// boss: {parts:[ {type:'mc'|'tf'|'riddle', ...} ]}
+
+function defaultLevels(){
+return [
+ {id:1,name:"Kamp Awal",icon:"🏕️",type:"mc",diff:"Mudah",time:25,pass:0.6,
+   questions:[
+    {q:"Apa yang menjadi dasar dalam perancangan dan produksi kerajinan?",options:["Data dari Tugas 1 & 2 tentang objek budaya dan material","Katalog belanja online","Trend media sosial minggu ini","Anggaran sekolah"],answer:0,hint:"Lihat kalimat pertama pada materi."},
+    {q:"Objek budaya lokal dua dimensi contohnya adalah…",options:["Bangunan dan senjata","Relief dan motif","Alat musik","Pakaian adat"],answer:1,hint:"Materi membedakan objek 2 dimensi dan 3 dimensi."},
+    {q:"Objek budaya lokal tiga dimensi contohnya adalah…",options:["Relief","Motif kain","Bangunan, alat musik, senjata","Foto lama"],answer:2,hint:"Cari kata 'tiga dimensi' pada materi."},
+    {q:"Mengapa objek budaya lokal perlu dikembangkan menjadi kerajinan?",options:["Agar lestari dan bermanfaat bagi daerah","Agar cepat terjual habis","Agar mudah dibuat masal tanpa desain","Karena wajib dari pemerintah pusat"],answer:0,hint:"Perhatikan tujuan pengembangan pada paragraf pembuka."},
+    {q:"Tahap pertama dalam proses perancangan kerajinan adalah…",options:["Pembuatan petunjuk produksi","Pemilihan sumber inspirasi dan pencarian ide","Studi model","Penjualan produk"],answer:1,hint:"Urutan tahapan disebutkan berurutan di materi."}
+   ]},
+ {id:2,name:"Hutan Pengetahuan",icon:"🌲",type:"sentence",diff:"Mudah",time:30,pass:0.6,
+   questions:[
+    {paragraph:"Ide bisa muncul secara tidak berurutan, dan tidak lengkap namun dapat juga muncul secara utuh. Salah satu dari kita bisa saja memiliki ide tentang suatu bentuk unik yang akan dibuat. Kunci sukses dari tahap brainstorming dalam kelompok adalah jangan ada perasaan takut salah, setiap orang berhak mengeluarkan pendapat.",
+     q:"Temukan kalimat yang menjelaskan kunci sukses brainstorming!",
+     sentences:["Ide bisa muncul secara tidak berurutan, dan tidak lengkap namun dapat juga muncul secara utuh.","Salah satu dari kita bisa saja memiliki ide tentang suatu bentuk unik yang akan dibuat.","Kunci sukses dari tahap brainstorming dalam kelompok adalah jangan ada perasaan takut salah, setiap orang berhak mengeluarkan pendapat."],
+     answer:2,hint:"Cari kalimat yang memuat kata 'kunci sukses'."},
+    {paragraph:"Ide-ide rancangan dapat digambarkan pada sebuah buku atau lembaran kertas, dengan menggunakan pinsil, spidol atau bolpoin dan sebaiknya hindari penggunaan penghapus. Tariklah garis tipis-tipis dahulu. Gambarkan idemu sebanyak-banyaknya, dapat berupa variasi produk.",
+     q:"Temukan kalimat yang menyarankan cara menggambar sketsa awal!",
+     sentences:["Ide-ide rancangan dapat digambarkan pada sebuah buku atau lembaran kertas.","Tariklah garis tipis-tipis dahulu.","Gambarkan idemu sebanyak-banyaknya, dapat berupa variasi produk."],
+     answer:1,hint:"Cari saran teknis tentang menarik garis."},
+    {paragraph:"Studi model dapat dilakukan dengan material sebenarnya maupun bukan material sebenarnya. Kerajinan yang akan dibuat berbentuk tiga dimensi, maka studi bentuk dilakukan dalam format tiga dimensi.",
+     q:"Temukan kalimat yang menjelaskan bahan pada tahap studi model!",
+     sentences:["Kerajinan yang akan dibuat berbentuk tiga dimensi.","Studi model dapat dilakukan dengan material sebenarnya maupun bukan material sebenarnya.","Maka studi bentuk dilakukan dalam format tiga dimensi."],
+     answer:1,hint:"Cari kalimat yang menyebut kata 'material'."},
+    {paragraph:"Prosedur dan langkah kerja dituliskan secara jelas dan detail agar pelaksanaan produksi dapat dilakukan dengan mudah dan terencana. Tahap ini disebut perencanaan produksi.",
+     q:"Temukan kalimat yang menjelaskan tujuan menuliskan prosedur secara detail!",
+     sentences:["Tahap ini disebut perencanaan produksi.","Prosedur dan langkah kerja dituliskan secara jelas dan detail agar pelaksanaan produksi dapat dilakukan dengan mudah dan terencana."],
+     answer:1,hint:"Cari kalimat dengan kata 'agar'."}
+   ]},
+ {id:3,name:"Pegunungan Misteri",icon:"🏔️",type:"riddle",diff:"Mudah-Sedang",time:35,pass:0.6,
+   questions:[
+    {clues:["Aku adalah tahap paling awal dalam merancang kerajinan.","Aku sering dilakukan lewat curah pendapat berkelompok.","Aku menghasilkan banyak gagasan tanpa takut salah."],
+     options:["Perencanaan Produksi","Pencarian Ide Produk","Prototyping","Pemasaran"],answer:1,hint:"Ingat tahap nomor 1 pada materi."},
+    {clues:["Aku mengubah ide abstrak menjadi bentuk yang bisa dilihat.","Aku dibuat dengan pensil, spidol, atau bolpoin.","Aku sebaiknya dibuat tanpa penghapus."],
+     options:["Sketsa","Studi Model","Produksi Massal","Uji Pasar"],answer:0,hint:"Aku berbentuk dua dimensi di atas kertas."},
+    {clues:["Aku menguji ide dalam bentuk tiga dimensi.","Aku bisa dibuat dari material sebenarnya atau bukan.","Aku dilakukan setelah ide terbaik dipilih."],
+     options:["Sketsa","Brainstorming","Studi Model / Prototyping","Evaluasi Akhir"],answer:2,hint:"Aku bukan gambar datar, tapi bentuk nyata."},
+    {clues:["Aku berisi prosedur dan langkah kerja yang detail.","Tujuanku agar produksi mudah dan terencana.","Aku adalah tahap terakhir sebelum produk benar-benar dibuat."],
+     options:["Perencanaan Produksi","Pencarian Ide","Studi Model","Sketsa"],answer:0,hint:"Aku berhubungan dengan kata 'prosedur'."}
+   ]},
+ {id:4,name:"Lembah Kata",icon:"📜",type:"scramble",diff:"Mudah-Sedang",time:40,pass:0.6,
+   questions:[
+    {words:["lokal","budaya","dikembangkan","harus","Objek"],correct:["Objek","budaya","lokal","harus","dikembangkan"],hint:"Mulai dari kata benda yang menjadi subjek kalimat."},
+    {words:["ide","brainstorming","kelompok","dalam","dicurahkan","dapat"],correct:["ide","dapat","dicurahkan","dalam","kelompok","brainstorming"],hint:"Susun: ide ... dapat ... dalam ..."},
+    {words:["dua","budaya","berupa","Objek","dimensi","dapat","objek"],correct:["Objek","budaya","dapat","berupa","objek","dua","dimensi"],hint:"Awali dengan 'Objek budaya'."},
+    {words:["produksi","perencanaan","tahap","adalah","Tahap","terakhir"],correct:["Tahap","terakhir","adalah","perencanaan","produksi"],hint:"Kata 'Tahap terakhir' ada di awal."}
+   ]},
+ {id:5,name:"Taman Pasangan",icon:"🧩",type:"matching",diff:"Sedang",time:45,pass:0.6,
+   questions:[
+    {pairs:[
+      {term:"Pencarian Ide",def:"Menemukan gagasan produk lewat brainstorming"},
+      {term:"Sketsa",def:"Menggambarkan ide agar berwujud di atas kertas"},
+      {term:"Studi Model",def:"Menguji bentuk ide dalam format tiga dimensi"},
+      {term:"Perencanaan Produksi",def:"Menuliskan prosedur dan langkah kerja secara detail"}
+    ],hint:"Cocokkan istilah tahapan dengan pengertiannya di materi."}
+   ]},
+ {id:6,name:"Kuil Fakta",icon:"⛩️",type:"tf",diff:"Sedang",time:30,pass:0.6,
+   questions:[
+    {statement:"Objek budaya lokal hanya boleh berbentuk tiga dimensi.",answer:false,hint:"Materi menyebutkan dua kategori bentuk objek."},
+    {statement:"Brainstorming sebaiknya membebaskan anggota untuk mengeluarkan ide sebanyak-banyaknya tanpa takut salah.",answer:true,hint:"Ingat kunci sukses brainstorming."},
+    {statement:"Sketsa sebaiknya langsung dihapus jika ada garis yang kurang tepat.",answer:false,hint:"Materi justru menyarankan untuk tidak menghapus."},
+    {statement:"Studi model hanya boleh menggunakan material sebenarnya.",answer:false,hint:"Materi menyebut 'maupun bukan material sebenarnya'."},
+    {statement:"Perencanaan produksi bertujuan agar pelaksanaan produksi mudah dan terencana.",answer:true,hint:"Ini disebutkan langsung pada materi."}
+   ]},
+ {id:7,name:"Labirin Pengetahuan",icon:"🌀",type:"maze",diff:"Sulit",time:60,pass:0.6,
+   questions:{gates:[
+    {q:"Tahap setelah 'Pencarian Ide' adalah…",options:["Perencanaan Produksi","Membuat Gambar/Sketsa","Studi Model","Evaluasi"],answer:1},
+    {q:"Tahap setelah 'Membuat Gambar/Sketsa' adalah…",options:["Pilih Ide Terbaik","Pencarian Ide","Perencanaan Produksi","Pemasaran"],answer:0},
+    {q:"Tahap setelah 'Pilih Ide Terbaik' adalah…",options:["Sketsa","Prototyping / Studi Model","Brainstorming","Selesai"],answer:1},
+    {q:"Tahap terakhir dari proses ini adalah…",options:["Perencanaan Produksi","Pencarian Ide","Sketsa","Studi Model"],answer:0},
+    {q:"Studi model berguna untuk…",options:["Menguji bentuk ide dalam tiga dimensi","Menjual produk","Mencari investor","Membuat logo"],answer:0},
+    {q:"Brainstorming paling tepat dilakukan pada tahap…",options:["Perencanaan Produksi","Pencarian Ide Produk","Studi Model","Sketsa"],answer:1}
+   ],hint:"Ingat kembali urutan lima tahap pada materi."}},
+ {id:8,name:"Kastil Detektif",icon:"🏰",type:"detective",diff:"Sulit",time:60,pass:0.6,
+   questions:[
+    {evidence:["Kelompok A membuat banyak sketsa dua dimensi sebelum memilih satu ide.","Kelompok A tidak pernah membuat bentuk nyata dari idenya.","Kelompok A langsung membuat produk akhir dari sketsa terpilih."],
+     q:"Tahapan apa yang terlewat dari proses Kelompok A?",
+     options:["Perencanaan Produksi","Studi Model / Prototyping","Pencarian Ide","Sketsa"],answer:1,
+     hint:"Bandingkan langkah Kelompok A dengan 5 tahap resmi pada materi."},
+    {evidence:["Kelompok B membuat prosedur kerja yang detail sebelum produksi.","Kelompok B mencantumkan alat dan bahan secara rinci.","Produksi Kelompok B berjalan tanpa banyak kendala."],
+     q:"Tahap apa yang paling berperan pada keberhasilan Kelompok B?",
+     options:["Pencarian Ide","Sketsa","Perencanaan Produksi","Studi Model"],answer:2,
+     hint:"Perhatikan kata 'prosedur' dan 'detail'."},
+    {evidence:["Kelompok C hanya punya satu anggota yang boleh berbicara saat diskusi.","Anggota lain takut idenya salah sehingga diam saja.","Hasil ide kelompok C sangat sedikit."],
+     q:"Prinsip brainstorming apa yang dilanggar Kelompok C?",
+     options:["Menggunakan pensil saat sketsa","Kebebasan mengeluarkan pendapat tanpa takut salah","Membuat studi model","Menulis prosedur produksi"],answer:1,
+     hint:"Ingat 'kunci sukses brainstorming' pada materi."}
+   ]},
+ {id:9,name:"Gunung Tantangan (Boss)",icon:"🌋",type:"boss",diff:"Sangat Sulit",time:75,pass:0.6,
+   questions:{parts:[
+    {type:"mc",q:"Urutan tahapan perancangan kerajinan yang benar adalah…",options:["Sketsa-Ide-Studi Model-Rencana","Ide-Sketsa-Pilih Ide-Studi Model-Rencana Produksi","Rencana-Ide-Sketsa-Studi Model","Studi Model-Ide-Sketsa-Rencana"],answer:1},
+    {type:"tf",statement:"Objek budaya lokal yang dikenakan manusia seperti pakaian adat juga bisa menjadi inspirasi kerajinan.",answer:true},
+    {type:"riddle",clues:["Aku dilakukan setelah banyak sketsa dibuat.","Aku memilih satu dari sekian banyak ide.","Aku mempertimbangkan mana yang paling menyenangkan dan memungkinkan dibuat."],options:["Pilih Ide Terbaik","Brainstorming","Studi Model","Evaluasi Produk"],answer:0},
+    {type:"mc",q:"Produk kerajinan dengan inspirasi budaya lokal harus memiliki nilai…",options:["Estetik dan inovasi agar diminati pasar","Harga termurah","Bentuk yang sama semua","Tanpa memperhatikan pengguna"],answer:0}
+   ]}},
+ {id:10,name:"Ruang Harta Pengetahuan (Final Boss)",icon:"🏆",type:"boss",diff:"Final",time:90,pass:0.7,
+   questions:{parts:[
+    {type:"mc",q:"Apa dasar utama sebelum melakukan perancangan dan produksi kerajinan?",options:["Data dari observasi objek budaya dan material lokal","Modal usaha yang besar","Tren pasar luar negeri","Alat produksi otomatis"],answer:0},
+    {type:"tf",statement:"Sketsa sebaiknya dibuat dengan garis yang langsung tegas tanpa proses garis tipis terlebih dahulu.",answer:false},
+    {type:"mc",q:"Mengapa studi model penting dilakukan sebelum produksi massal?",options:["Untuk menguji bentuk tiga dimensi dari ide dua dimensi","Untuk mempercepat penjualan","Untuk mengurangi jumlah pekerja","Karena wajib difoto untuk media sosial"],answer:0},
+    {type:"riddle",clues:["Aku adalah tahap paling akhir sebelum produk dibuat.","Aku berisi prosedur dan langkah kerja yang jelas.","Tanpa aku, produksi bisa berantakan."],options:["Perencanaan Produksi","Pencarian Ide","Sketsa","Pilih Ide Terbaik"],answer:0},
+    {type:"mc",q:"Produk kerajinan yang baik dari objek budaya lokal harus…",options:["Memiliki nilai estetik dan inovasi","Meniru produk luar negeri","Dibuat tanpa perencanaan","Mengabaikan material lokal"],answer:0}
+   ]}}
+];
+}
+
+const ACHIEVEMENTS = [
+ {id:"first_step",icon:"🏅",name:"First Step",desc:"Menyelesaikan Level 1"},
+ {id:"knowledge_hunter",icon:"🏅",name:"Knowledge Hunter",desc:"Menyelesaikan 5 level"},
+ {id:"puzzle_master",icon:"🏅",name:"Puzzle Master",desc:"Selesaikan level teka-teki tanpa hint"},
+ {id:"speed_runner",icon:"🏅",name:"Speed Runner",desc:"Selesaikan sebuah level tanpa satu pun jawaban salah"},
+ {id:"master_pengetahuan",icon:"🏆",name:"Master Pengetahuan",desc:"Menyelesaikan seluruh petualangan"}
+];
+
+function defaultProgress(){
+  return {
+    name:"", kelas:"", absen:"",
+    unlockedLevel:1, completed:[], keys:0, score:0, lives:3,
+    achievements:[], hintsUsedByLevel:{}, startedAt:null, playSeconds:0,
+    audio:true
+  };
+}
+
+/* ---------------- global state ---------------- */
+let S = null;          // player progress (personal)
+let C = null;          // content: {materi, levels} (shared)
+let UI = { screen:"loading" };
+let RUN = null;        // ephemeral per-level run state
+
+const app = document.getElementById('app');
+
+async function init(){
+  const [savedProgress, savedContent] = await Promise.all([
+    sGet('progress', false),
+    sGet('content', true)
+  ]);
+  S = savedProgress || defaultProgress();
+  C = savedContent || { materi: DEFAULT_MATERI, levels: defaultLevels() };
+  if(!C.teacherName) C.teacherName = "Jhosua Gulipia, S.Inf.Med";
+  if(!C.school) C.school = "SMAS Maranatha";
+  UI.screen = S.name ? "map" : "splash";
+  render();
+  if(!hasCloudStorage()){
+    setTimeout(()=>showToast('Progres disimpan di browser/perangkat ini (tidak sinkron lintas perangkat).'), 500);
+  }
+}
+
+async function saveProgress(){ return await sSet('progress', S, false); }
+async function saveContent(){ await sSet('content', C, true); }
+
+/* ---------------- toast notifikasi ---------------- */
+let toastTimer=null;
+function showToast(msg, type){
+  let t = document.getElementById('appToast');
+  if(!t){ t=document.createElement('div'); t.id='appToast'; document.body.appendChild(t); }
+  t.className = 'toast'+(type==='err'?' err':'');
+  t.textContent = (type==='err'?'⚠️ ':'✅ ')+msg;
+  requestAnimationFrame(()=>t.classList.add('show'));
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.classList.remove('show'); }, 2600);
+}
+
+/* ---------------- simpan manual (tombol) ---------------- */
+async function manualSave(){
+  const ok = await saveProgress();
+  if(ok) showToast('Game berhasil disimpan! Terakhir: Level '+S.unlockedLevel);
+  else showToast('Gagal menyimpan game. Periksa koneksimu dan coba lagi.', 'err');
+}
+
+/* ---------------- simpan otomatis saat pemain keluar/menutup tab ---------------- */
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='hidden' && S && S.name) saveProgress();
+});
+window.addEventListener('pagehide', ()=>{ if(S && S.name) saveProgress(); });
+async function saveLeaderboard(){
+  if(!S.name) return;
+  const key = 'leaderboard:'+S.name.toLowerCase().replace(/\\s+/g,'_')+'_'+(S.kelas||'-');
+  await sSet(key, {
+    name:S.name, kelas:S.kelas, absen:S.absen, score:S.score,
+    levelsCompleted:S.completed.length, keys:S.keys, updatedAt:new Date().toISOString()
+  }, true);
+}
+
+/* ---------------- audio (WebAudio synth, no files needed) ------------- */
+let actx=null;
+function ac(){ if(!actx){ try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } return actx; }
+function beep(freq=440,dur=.12,type='sine',vol=.18,delay=0){
+  if(!S || !S.audio) return;
+  const ctx=ac(); if(!ctx) return;
+  const t=ctx.currentTime+delay;
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+dur);
+}
+const SFX = {
+  click:()=>beep(520,.06,'square',.12),
+  correct:()=>{beep(660,.09,'sine',.18);beep(880,.12,'sine',.16,.09);},
+  wrong:()=>{beep(180,.18,'sawtooth',.16);},
+  key:()=>{beep(523,.12,'sine',.2);beep(659,.12,'sine',.2,.12);beep(784,.18,'sine',.22,.24);},
+  levelup:()=>{beep(440,.1,'triangle',.2);beep(554,.1,'triangle',.2,.1);beep(659,.16,'triangle',.22,.2);},
+  win:()=>{[523,659,784,1046].forEach((f,i)=>beep(f,.18,'triangle',.22,i*.14));},
+  lose:()=>{beep(300,.2,'sawtooth',.18);beep(220,.25,'sawtooth',.16,.15);}
+};
+
+/* ---------------- small utils ---------------- */
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function on(id,ev,fn){ const el=document.getElementById(id); if(el) el.addEventListener(ev,fn); }
+function fmtTime(sec){ const m=Math.floor(sec/60), s=sec%60; return m+":"+String(s).padStart(2,'0'); }
+
+function render(){
+  switch(UI.screen){
+    case "loading": app.innerHTML = `<div class="screen"><div class="center">Memuat…</div></div>`; break;
+    case "splash": renderSplash(); break;
+    case "name": renderNameInput(); break;
+    case "map": renderMap(); break;
+    case "level": renderLevelScene(); break;
+    case "result": renderFinalResult(); break;
+    case "achievements": renderAchievements(); break;
+    case "teacher": renderTeacher(); break;
+    case "settings": renderSettings(); break;
+    default: renderSplash();
+  }
+}
+
+/* ================= SPLASH ================= */
+function renderSplash(){
+  app.innerHTML = `
+  <div class="screen">
+    <div class="wrap center">
+      <div class="emoji-row">🧭 🗺️ 🗝️ 💎</div>
+      <h1 class="splash-title">PETUALANGAN MENCARI<br>HARTA PENGETAHUAN</h1>
+      <p class="splash-sub">Di sebuah dunia misterius terdapat sebuah Harta Pengetahuan yang hanya dapat ditemukan oleh petualang yang mampu melewati 10 wilayah. Setiap wilayah dijaga oleh tantangan berbeda. Untuk membuka gerbang berikutnya, kamu harus mendapatkan Kunci Pengetahuan. Apakah kamu mampu mencapai ruang harta?</p>
+      <div class="row center" style="justify-content:center;margin-top:10px;">
+        <button class="btn btn-gold" id="startBtn">🚀 Mulai Petualangan</button>
+        <button class="btn btn-outline" id="teacherBtn">🧑‍🏫 Mode Guru</button>
+      </div>
+    </div>
+  </div>`;
+  on('startBtn','click',()=>{SFX.click(); UI.screen='name'; render();});
+  on('teacherBtn','click',()=>{SFX.click(); UI.screen='teacher'; UI.teachTab='materi'; render();});
+}
+
+/* ================= NAME INPUT ================= */
+function renderNameInput(){
+  app.innerHTML = `
+  <div class="screen">
+    <div class="wrap" style="max-width:480px;">
+      <div class="card center">
+        <div style="font-size:44px;">👤</div>
+        <h2 style="margin:6px 0 18px;">Masukkan Nama Petualang</h2>
+        <label class="field-label">Nama</label>
+        <input type="text" id="pname" placeholder="cth: Jhosua" maxlength="30">
+        <div style="height:10px;"></div>
+        <label class="field-label">Kelas (opsional)</label>
+        <input type="text" id="pkelas" placeholder="cth: XI-2" maxlength="20">
+        <div style="height:10px;"></div>
+        <label class="field-label">No. Absen (opsional)</label>
+        <input type="text" id="pabsen" placeholder="cth: 14" maxlength="10">
+        <div style="height:20px;"></div>
+        <button class="btn btn-gold" id="okBtn" style="width:100%;">🧭 Mulai Menjelajah</button>
+      </div>
+    </div>
+  </div>`;
+  on('okBtn','click', async ()=>{
+    const v = document.getElementById('pname').value.trim();
+    if(!v){ document.getElementById('pname').style.borderColor='var(--danger)'; return; }
+    S.name = v;
+    S.kelas = document.getElementById('pkelas').value.trim();
+    S.absen = document.getElementById('pabsen').value.trim();
+    if(!S.startedAt) S.startedAt = Date.now();
+    SFX.click();
+    await saveProgress();
+    UI.screen='map'; render();
+  });
+}
+
+/* ================= MAP ================= */
+function levelState(lv){
+  if(S.completed.includes(lv.id)) return "done";
+  if(lv.id === S.unlockedLevel || S.completed.includes(lv.id-1) || lv.id===1) {
+    if(lv.id <= S.unlockedLevel) return "open";
+  }
+  return "locked";
+}
+
+function renderMap(){
+  const levels = C.levels;
+  const totalDone = S.completed.length;
+  const pct = Math.round((totalDone/10)*100);
+  let nodesHtml = levels.map((lv,i)=>{
+    const st = levelState(lv);
+    const icon = st==='done' ? '✅' : st==='open' ? lv.icon : '🔒';
+    const cls = st==='locked' ? 'locked' : '';
+    return `
+    <div class="node ${cls}" data-lv="${lv.id}" tabindex="0" role="button" aria-label="Level ${lv.id} ${esc(lv.name)}" style="display:flex;align-items:center;gap:14px;padding:14px 16px;margin-bottom:10px;border-radius:16px;background:${st==='locked'?'rgba(255,255,255,.05)':'rgba(255,255,255,.10)'};border:2px solid ${st==='done'?'var(--ok)':st==='open'?'var(--gold)':'rgba(255,255,255,.15)'};">
+    
+      <div style="font-size:30px;">${icon}</div>
+      <div style="flex:1;">
+        <div style="font-weight:800;font-family:'Cinzel',serif;color:${st==='locked'?'rgba(255,255,255,.4)':'var(--parchment)'};">Level ${lv.id} — ${esc(lv.name)}</div>
+        <div class="small-muted" style="color:${st==='locked'?'rgba(255,255,255,.35)':'var(--parchment-dark)'};">${esc(lv.diff)} ${lv.type==='boss'?'• 👾 Boss':''}</div>
+      </div>
+      <div style="font-size:22px;">${st==='open'?'🔑':st==='done'?'⭐':''}</div>
+    </div>`;
+  }).join('');
+
+  app.innerHTML = `
+  <div class="topbar">
+    <div class="name">👤 ${esc(S.name)}</div>
+    <div class="chip">🗝️ ${S.keys}/10</div>
+    <div class="chip mono">⭐ ${S.score}</div>
+    <div class="spacer"></div>
+    <button class="btn btn-forest btn-sm" id="saveBtn">💾 Simpan</button>
+    <button class="btn btn-outline btn-sm" id="achBtn">🏆 Prestasi</button>
+    <button class="btn btn-outline btn-sm" id="setBtn">⚙️</button>
+    <button class="btn btn-outline btn-sm" id="teachBtn2">🧑‍🏫</button>
+  </div>
+  <div class="screen" style="padding-top:20px;">
+    <div class="wrap">
+      <h2 class="map-title">🗺️ Peta Petualangan</h2>
+      <p class="map-story">Selamat datang, <b>${esc(S.name)}</b>! Lanjutkan perjalananmu menembus wilayah demi wilayah untuk mengumpulkan Kunci Pengetahuan.</p>
+      <div class="progress-track" style="margin-bottom:6px;"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="small-muted center" style="margin-bottom:18px;">PETUALANGANMU: ${pct}% selesai</div>
+      <div class="card">${nodesHtml}</div>
+    </div>
+  </div>`;
+  on('saveBtn','click', async ()=>{ SFX.click(); await manualSave(); });
+  on('achBtn','click',()=>{UI.screen='achievements';render();});
+  on('setBtn','click',()=>{UI.screen='settings';render();});
+  on('teachBtn2','click',()=>{UI.screen='teacher';UI.teachTab='materi';render();});
+  document.querySelectorAll('.node').forEach(n=>{
+    const activate = ()=>{
+      const id = parseInt(n.dataset.lv);
+      const lv = C.levels.find(l=>l.id===id);
+      const st = levelState(lv);
+      if(st==='locked'){ SFX.wrong(); return; }
+      SFX.click();
+      startLevel(id);
+    };
+    n.addEventListener('click',activate);
+    n.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); activate(); } });
+  });
+}
+
+/* ================= LEVEL RUNTIME ================= */
+function startLevel(id){
+  const lv = C.levels.find(l=>l.id===id);
+  RUN = {
+    lvId:id, level:lv, idx:0, correct:0, total:0, usedHint:false,
+    timeLeft: lv.time, timerHandle:null, lives: lv.lives||3, maxLives: lv.lives||3,
+    mazeGateIdx:0, mazeCheckpoint:0, matchState:null, scrambleState:null,
+    bossPartIdx:0
+  };
+  if(lv.type==='matching') RUN.total = lv.questions[0].pairs.length;
+  else if(lv.type==='maze') RUN.total = lv.questions.gates.length;
+  else if(lv.type==='boss') RUN.total = lv.questions.parts.length;
+  else RUN.total = lv.questions.length;
+  UI.screen='level';
+  render();
+  startTimer();
+}
+
+function startTimer(){
+  // Tidak ada batas waktu dalam menjawab — pemain bisa berpikir dengan tenang.
+}
+function stopTimer(){ if(RUN&&RUN.timerHandle) clearInterval(RUN.timerHandle); }
+
+function handleLevelTimeout(){
+  SFX.wrong();
+  finishLevel(false);
+}
+
+function scoreAdd(n){ S.score = Math.max(0, S.score+n); }
+
+/* ---- nyawa (lives) helpers: shared oleh semua tipe soal ---- */
+function heartsHtml(){
+  const max = (RUN && RUN.maxLives) || 3;
+  const lv = RUN ? Math.max(0,RUN.lives) : max;
+  return "❤️".repeat(lv) + "🖤".repeat(Math.max(0,max-lv));
+}
+function updateTopChips(){
+  document.querySelectorAll('.topbar .chip').forEach(c=>{
+    if(c.textContent.includes('❤️')||c.textContent.includes('🖤')) c.innerHTML = heartsHtml();
+    else if(c.classList.contains('mono') && c.textContent.trim().startsWith('⭐')) c.textContent = '⭐ '+S.score;
+  });
+}
+function resetLevelAttempt(){
+  RUN.idx = 0; RUN.correct = 0; RUN.lives = RUN.maxLives; RUN.usedHint = false;
+  RUN.mazeGateIdx = 0; RUN.mazeCheckpoint = 0;
+  RUN.matchState = null; RUN.scrambleState = null; RUN.riddleClueIdx = 1; RUN.bossPartIdx = 0;
+}
+function handleLivesExhausted(){
+  stopTimer();
+  const penalty = Math.min(80, S.score);
+  S.score = Math.max(0, S.score - penalty);
+  saveProgress();
+  showLoseLifeModal(penalty);
+}
+function showLoseLifeModal(penalty){
+  const ov = document.createElement('div'); ov.className='overlay';
+  ov.innerHTML = `<div class="modal">
+    <div style="font-size:50px;">💔</div>
+    <h2>NYAWA HABIS!</h2>
+    <p>Kamu harus mengulang level ini dari soal pertama.${penalty>0?` Poin dikurangi <b>${penalty}</b> sebagai penalti.`:''}</p>
+    <div class="row" style="justify-content:center;margin-top:14px;">
+      <button class="btn btn-gold" id="retryLife">🔁 Mulai Ulang dari Soal 1</button>
+      <button class="btn btn-outline" id="toMapLife">🗺️ Kembali ke Peta</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#retryLife').onclick = ()=>{
+    document.body.removeChild(ov);
+    resetLevelAttempt();
+    render();
+    startTimer();
+  };
+  ov.querySelector('#toMapLife').onclick = ()=>{ document.body.removeChild(ov); UI.screen='map'; render(); };
+}
+
+function renderLevelScene(){
+  const lv = RUN.level;
+  const pct = Math.round((RUN.idx/RUN.total)*100);
+  app.innerHTML = `
+  <div class="topbar">
+    <button class="btn btn-outline btn-sm" id="backMap">← Peta</button>
+    <div class="chip">${heartsHtml()}</div>
+    <div class="chip mono">⭐ ${S.score}</div>
+    <div class="spacer"></div>
+    <button class="btn btn-forest btn-sm" id="saveBtnLvl">💾</button>
+    <button class="btn btn-outline btn-sm" id="hintBtn">💡 Petunjuk</button>
+    <button class="btn btn-outline btn-sm" id="audioBtn">${S.audio?'🔊':'🔇'}</button>
+  </div>
+  <div class="scene">
+    <div class="scene-header">
+      <div class="lvl-badge">${lv.icon}</div>
+      <div>
+        <h2 style="margin:0;color:var(--gold-bright);">Level ${lv.id} — ${esc(lv.name)}</h2>
+        <div class="small-muted" style="color:var(--parchment-dark);">${esc(lv.diff)}</div>
+      </div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div id="qcard" class="card qcard"></div>
+    <div id="hintSlot"></div>
+  </div>`;
+  on('backMap','click',()=>{ if(confirm('Keluar dari level? Progress level ini akan hilang.')){ stopTimer(); UI.screen='map'; render(); }});
+  on('saveBtnLvl','click', async ()=>{ SFX.click(); await manualSave(); });
+  on('audioBtn','click',()=>{ S.audio=!S.audio; saveProgress(); render(); });
+  on('hintBtn','click',()=>useHint());
+  renderQuestionByType();
+}
+
+function useHint(){
+  RUN.usedHint = true;
+  let text = "Tidak ada petunjuk tambahan untuk soal ini.";
+  const lv = RUN.level;
+  if(lv.type==='mc'||lv.type==='sentence'||lv.type==='riddle'||lv.type==='scramble'||lv.type==='matching'||lv.type==='tf'||lv.type==='detective'){
+    const q = lv.type==='matching' ? lv.questions[0] : lv.questions[RUN.idx];
+    if(q && q.hint) text = q.hint;
+  } else if(lv.type==='maze'){
+    text = lv.questions.hint || text;
+  } else if(lv.type==='boss'){
+    text = "Ingat kembali seluruh materi yang sudah kamu pelajari di level-level sebelumnya!";
+  }
+  scoreAdd(-10);
+  const slot = document.getElementById('hintSlot');
+  if(slot) slot.innerHTML = `<div class="hint-box">💡 <b>Petunjuk:</b> ${esc(text)}</div>`;
+  updateTopChips();
+}
+
+function renderQuestionByType(){
+  const lv = RUN.level;
+  document.getElementById('hintSlot') && (document.getElementById('hintSlot').innerHTML='');
+  if(lv.type==='mc') return renderMC();
+  if(lv.type==='sentence') return renderSentence();
+  if(lv.type==='riddle') return renderRiddle();
+  if(lv.type==='scramble') return renderScramble();
+  if(lv.type==='matching') return renderMatching();
+  if(lv.type==='tf') return renderTF();
+  if(lv.type==='maze') return renderMaze();
+  if(lv.type==='detective') return renderDetective();
+  if(lv.type==='boss') return renderBossPart();
+}
+
+function feedbackThenNext(isCorrect, correctText, cb){
+  const qcard = document.getElementById('qcard');
+  const fb = document.createElement('div');
+  fb.className = 'feedback ' + (isCorrect?'ok':'bad');
+  fb.innerHTML = isCorrect ? `✅ <b>HEBAT!</b> Jawabanmu benar. +100 poin` : `❌ Jawaban belum tepat. Nyawa berkurang 1. Coba lagi soal ini!`;
+  qcard.appendChild(fb);
+  if(isCorrect){ SFX.correct(); scoreAdd(100); RUN.correct++; }
+  else { SFX.wrong(); RUN.lives--; }
+  updateTopChips();
+  setTimeout(()=>{
+    if(!isCorrect){
+      if(RUN.lives<=0){ handleLivesExhausted(); return; }
+      // Jawaban salah tapi nyawa masih ada: ulangi soal yang sama sampai benar.
+      render();
+      return;
+    }
+    RUN.idx++;
+    if(RUN.idx>=RUN.total){ stopTimer(); finishLevel(true); }
+    else render();
+  }, 1200);
+}
+
+/* ---- MC ---- */
+function renderMC(){
+  const q = RUN.level.questions[RUN.idx];
+  const qcard = document.getElementById('qcard');
+  qcard.innerHTML = `<h3>${esc(q.q)}</h3><div id="opts"></div>`;
+  const optsEl = document.getElementById('opts');
+  q.options.forEach((opt,i)=>{
+    const b = document.createElement('button');
+    b.className='opt-btn'; b.textContent = opt;
+    b.onclick = ()=>{
+      document.querySelectorAll('#opts .opt-btn').forEach(x=>x.classList.add('dim'));
+      b.classList.remove('dim');
+      b.classList.add(i===q.answer?'correct':'wrong');
+      feedbackThenNext(i===q.answer, q.options[q.answer]);
+    };
+    optsEl.appendChild(b);
+  });
+}
+
+/* ---- SENTENCE FINDER ---- */
+function renderSentence(){
+  const q = RUN.level.questions[RUN.idx];
+  const qcard = document.getElementById('qcard');
+  qcard.innerHTML = `
+   <div class="evidence-box">${esc(q.paragraph)}</div>
+   <h3>${esc(q.q)}</h3><div id="opts"></div>`;
+  const optsEl = document.getElementById('opts');
+  q.sentences.forEach((s,i)=>{
+    const b = document.createElement('div');
+    b.className='sentence-opt'; b.textContent = s;
+    b.onclick = ()=>{
+      document.querySelectorAll('.sentence-opt').forEach(x=>x.style.pointerEvents='none');
+      b.style.borderColor = i===q.answer?'var(--ok)':'var(--danger)';
+      b.style.background = i===q.answer?'#defbe8':'#fde3e0';
+      feedbackThenNext(i===q.answer, q.sentences[q.answer]);
+    };
+    optsEl.appendChild(b);
+  });
+}
+
+/* ---- RIDDLE ---- */
+function renderRiddle(){
+  const q = RUN.level.questions[RUN.idx];
+  if(!RUN.riddleClueIdx) RUN.riddleClueIdx = 1;
+  const qcard = document.getElementById('qcard');
+  const clues = q.clues.slice(0, RUN.riddleClueIdx);
+  qcard.innerHTML = `
+   <h3>🧩 Siapakah Aku?</h3>
+   <div class="evidence-box"><ul>${clues.map(c=>'<li>'+esc(c)+'</li>').join('')}</ul></div>
+   ${RUN.riddleClueIdx < q.clues.length ? `<button class="btn btn-outline btn-sm" id="moreClue">➕ Petunjuk Berikutnya</button>` : ''}
+   <div id="opts" style="margin-top:14px;"></div>`;
+  on('moreClue','click',()=>{ RUN.riddleClueIdx++; renderRiddle(); });
+  const optsEl = document.getElementById('opts');
+  q.options.forEach((opt,i)=>{
+    const b = document.createElement('button');
+    b.className='opt-btn'; b.textContent = opt;
+    b.onclick = ()=>{
+      document.querySelectorAll('#opts .opt-btn').forEach(x=>x.classList.add('dim'));
+      b.classList.remove('dim'); b.classList.add(i===q.answer?'correct':'wrong');
+      RUN.riddleClueIdx = 1;
+      feedbackThenNext(i===q.answer, q.options[q.answer]);
+    };
+    optsEl.appendChild(b);
+  });
+}
+
+/* ---- SCRAMBLE (click tiles in order, touch friendly) ---- */
+function renderScramble(){
+  const q = RUN.level.questions[RUN.idx];
+  if(!RUN.scrambleState || RUN.scrambleState.qidx!==RUN.idx){
+    RUN.scrambleState = { qidx:RUN.idx, pool: shuffle(q.words).map((w,i)=>({w,used:false,uid:i})), built:[] };
+  }
+  const st = RUN.scrambleState;
+  const qcard = document.getElementById('qcard');
+  qcard.innerHTML = `
+   <h3>🧵 Susun kata menjadi kalimat yang benar!</h3>
+   <div class="build-zone" id="buildZone">${st.built.map(b=>`<span class="tile">${esc(b.w)}</span>`).join(' ')}</div>
+   <div id="pool"></div>
+   <div class="row" style="margin-top:14px;">
+     <button class="btn btn-outline btn-sm" id="resetBtn">↺ Ulangi Susunan</button>
+     <button class="btn btn-gold btn-sm" id="submitScramble">✅ Periksa Jawaban</button>
+   </div>`;
+  const poolEl = document.getElementById('pool');
+  st.pool.forEach(item=>{
+    const b = document.createElement('button');
+    b.className='tile'+(item.used?' used':''); b.textContent=item.w;
+    b.onclick = ()=>{ if(item.used) return; item.used=true; st.built.push(item); SFX.click(); renderScramble(); };
+    poolEl.appendChild(b);
+  });
+  on('resetBtn','click',()=>{ st.pool.forEach(p=>p.used=false); st.built=[]; renderScramble(); });
+  on('submitScramble','click',()=>{
+    const built = st.built.map(b=>b.w);
+    const isCorrect = JSON.stringify(built) === JSON.stringify(q.correct);
+    RUN.scrambleState = null;
+    feedbackThenNext(isCorrect, q.correct.join(' '));
+  });
+}
+
+/* ---- MATCHING (click term then def) ---- */
+function renderMatching(){
+  const q = RUN.level.questions[0];
+  if(!RUN.matchState){
+    RUN.matchState = {
+      terms: shuffle(q.pairs.map((p,i)=>({...p,idx:i}))),
+      defs: shuffle(q.pairs.map((p,i)=>({...p,idx:i}))),
+      pairedIdx: new Set(), selTerm:null, selDef:null
+    };
+  }
+  const st = RUN.matchState;
+  const qcard = document.getElementById('qcard');
+  qcard.innerHTML = `
+   <h3>🔗 Pasangkan istilah dengan pengertiannya</h3>
+   <div class="row" style="align-items:flex-start;">
+    <div class="match-col" style="flex:1;" id="termCol"></div>
+    <div class="match-col" style="flex:1;" id="defCol"></div>
+   </div>
+   <div class="small-muted" style="margin-top:10px;">Terpasang: ${st.pairedIdx.size}/${q.pairs.length}</div>`;
+  const termCol = document.getElementById('termCol'), defCol = document.getElementById('defCol');
+  st.terms.forEach(t=>{
+    const el = document.createElement('div');
+    const paired = st.pairedIdx.has(t.idx);
+    el.className='match-item'+(paired?' paired':'')+(st.selTerm===t.idx&&!paired?' selected':'');
+    el.textContent = t.term;
+    if(!paired){
+      el.tabIndex = 0; el.setAttribute('role','button');
+      el.onclick = ()=>{ st.selTerm = t.idx; SFX.click(); const stop=tryMatch(); if(!stop) renderMatching(); };
+      el.onkeydown = (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); el.onclick(); } };
+    }
+    termCol.appendChild(el);
+  });
+  st.defs.forEach(d=>{
+    const el = document.createElement('div');
+    const paired = st.pairedIdx.has(d.idx);
+    el.className='match-item'+(paired?' paired':'')+(st.selDef===d.idx&&!paired?' selected':'');
+    el.textContent = d.def;
+    if(!paired){
+      el.tabIndex = 0; el.setAttribute('role','button');
+      el.onclick = ()=>{ st.selDef = d.idx; SFX.click(); const stop=tryMatch(); if(!stop) renderMatching(); };
+      el.onkeydown = (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); el.onclick(); } };
+    }
+    defCol.appendChild(el);
+  });
+  function tryMatch(){
+    if(st.selTerm!==null && st.selDef!==null){
+      if(st.selTerm === st.selDef){
+        st.pairedIdx.add(st.selTerm); SFX.correct(); scoreAdd(100); RUN.correct++;
+        st.selTerm=null; st.selDef=null;
+        updateTopChips();
+        if(st.pairedIdx.size === q.pairs.length){
+          RUN.idx = RUN.total;
+          RUN.matchState=null;
+          setTimeout(()=>{ stopTimer(); finishLevel(true); }, 500);
+        }
+      } else {
+        SFX.wrong(); RUN.lives--;
+        st.selTerm=null; st.selDef=null;
+        updateTopChips();
+        if(RUN.lives<=0){ handleLivesExhausted(); return true; }
+      }
+    }
+    return false;
+  }
+}
+
+/* ---- TRUE/FALSE ---- */
+function renderTF(){
+  const q = RUN.level.questions[RUN.idx];
+  const qcard = document.getElementById('qcard');
+  qcard.innerHTML = `<h3>${esc(q.statement)}</h3><div class="tf-btns"><button class="btn btn-forest" id="tTrue">✅ BENAR</button><button class="btn btn-danger" id="tFalse">❌ SALAH</button></div>`;
+  on('tTrue','click',()=>{ document.getElementById('tTrue').disabled=true; document.getElementById('tFalse').disabled=true; feedbackThenNext(q.answer===true, q.answer?'BENAR':'SALAH'); });
+  on('tFalse','click',()=>{ document.getElementById('tTrue').disabled=true; document.getElementById('tFalse').disabled=true; feedbackThenNext(q.answer===false, q.answer?'BENAR':'SALAH'); });
+}
+
+/* ---- MAZE ---- */
+function renderMaze(){
+  const gates = RUN.level.questions.gates;
+  const gi = RUN.mazeGateIdx;
+  const qcard = document.getElementById('qcard');
+  let track = gates.map((g,i)=>{
+    let cls='gate'; if(i<gi) cls+=' done'; if(i===gi) cls+=' current'; if(i%3===0) cls+=' checkpoint';
+    return `<div class="${cls}">${i<gi?'✅':(i===gi?'🧑':'🔒')}</div>`;
+  }).join('<div style="width:14px;height:2px;background:rgba(255,255,255,.25);"></div>');
+  qcard.innerHTML = `
+    <div class="maze-track">${track}</div>
+    <h3>🌀 Gerbang ${gi+1} dari ${gates.length}</h3>
+    <p>${esc(gates[gi].q)}</p>
+    <div id="opts"></div>`;
+  const optsEl = document.getElementById('opts');
+  gates[gi].options.forEach((opt,i)=>{
+    const b = document.createElement('button');
+    b.className='opt-btn'; b.textContent = opt;
+    b.onclick = ()=>{
+      document.querySelectorAll('#opts .opt-btn').forEach(x=>x.classList.add('dim'));
+      b.classList.remove('dim'); b.classList.add(i===gates[gi].answer?'correct':'wrong');
+      const isCorrect = i===gates[gi].answer;
+      const qcard2 = document.getElementById('qcard');
+      const fb = document.createElement('div');
+      if(isCorrect){
+        SFX.correct(); scoreAdd(100); RUN.correct++;
+        fb.className='feedback ok'; fb.innerHTML='✅ <b>HEBAT!</b> Gerbang terbuka! +100 poin';
+      } else {
+        SFX.wrong(); RUN.lives--;
+        fb.className='feedback bad'; fb.innerHTML='❌ Jawaban salah! Nyawa berkurang. Kamu kembali ke checkpoint terakhir.';
+      }
+      updateTopChips();
+      qcard2.appendChild(fb);
+      setTimeout(()=>{
+        if(!isCorrect && RUN.lives<=0){ handleLivesExhausted(); return; }
+        if(isCorrect){
+          RUN.mazeGateIdx++; RUN.idx++;
+          if(RUN.mazeGateIdx>=Math.floor(gates.length/3)*3 && RUN.mazeGateIdx%3===0) RUN.mazeCheckpoint=RUN.mazeGateIdx;
+          if(RUN.mazeGateIdx>=gates.length){ stopTimer(); finishLevel(true); return; }
+        } else {
+          RUN.mazeGateIdx = RUN.mazeCheckpoint;
+        }
+        render();
+      },1200);
+    };
+    optsEl.appendChild(b);
+  });
+}
+
+/* ---- DETECTIVE ---- */
+function renderDetective(){
+  const q = RUN.level.questions[RUN.idx];
+  const qcard = document.getElementById('qcard');
+  qcard.innerHTML = `
+   <h3>🕵️ Investigasi Kasus</h3>
+   <div class="evidence-box"><b>Bukti & Informasi:</b><ul>${q.evidence.map(e=>'<li>'+esc(e)+'</li>').join('')}</ul></div>
+   <h3>${esc(q.q)}</h3><div id="opts"></div>`;
+  const optsEl = document.getElementById('opts');
+  q.options.forEach((opt,i)=>{
+    const b = document.createElement('button');
+    b.className='opt-btn'; b.textContent = opt;
+    b.onclick = ()=>{
+      document.querySelectorAll('#opts .opt-btn').forEach(x=>x.classList.add('dim'));
+      b.classList.remove('dim'); b.classList.add(i===q.answer?'correct':'wrong');
+      feedbackThenNext(i===q.answer, q.options[q.answer]);
+    };
+    optsEl.appendChild(b);
+  });
+}
+
+/* ---- BOSS (mixed parts) ---- */
+function renderBossPart(){
+  const parts = RUN.level.questions.parts;
+  const p = parts[RUN.idx];
+  const qcard = document.getElementById('qcard');
+  const introBanner = RUN.idx===0 ? `<div class="evidence-box center" style="font-weight:800;">👾 ${RUN.level.id===10?'THE FINAL CHALLENGE':'CHALLENGE BOSS'} — Buktikan seluruh pengetahuanmu!</div>` : '';
+  qcard.innerHTML = `${introBanner}<div id="bossInner"></div>`;
+  const inner = document.getElementById('bossInner');
+  if(p.type==='mc'){
+    inner.innerHTML = `<h3>${esc(p.q)}</h3><div id="opts"></div>`;
+    const optsEl = document.getElementById('opts');
+    p.options.forEach((opt,i)=>{
+      const b=document.createElement('button'); b.className='opt-btn'; b.textContent=opt;
+      b.onclick=()=>{ document.querySelectorAll('#opts .opt-btn').forEach(x=>x.classList.add('dim')); b.classList.remove('dim'); b.classList.add(i===p.answer?'correct':'wrong'); feedbackThenNext(i===p.answer, p.options[p.answer]); };
+      optsEl.appendChild(b);
+    });
+  } else if(p.type==='tf'){
+    inner.innerHTML = `<h3>${esc(p.statement)}</h3><div class="tf-btns"><button class="btn btn-forest" id="tTrue">✅ BENAR</button><button class="btn btn-danger" id="tFalse">❌ SALAH</button></div>`;
+    on('tTrue','click',()=>{document.getElementById('tTrue').disabled=true;document.getElementById('tFalse').disabled=true; feedbackThenNext(p.answer===true, p.answer?'BENAR':'SALAH');});
+    on('tFalse','click',()=>{document.getElementById('tTrue').disabled=true;document.getElementById('tFalse').disabled=true; feedbackThenNext(p.answer===false, p.answer?'BENAR':'SALAH');});
+  } else if(p.type==='riddle'){
+    inner.innerHTML = `<h3>🧩 Siapakah Aku?</h3><div class="evidence-box"><ul>${p.clues.map(c=>'<li>'+esc(c)+'</li>').join('')}</ul></div><div id="opts" style="margin-top:14px;"></div>`;
+    const optsEl = document.getElementById('opts');
+    p.options.forEach((opt,i)=>{
+      const b=document.createElement('button'); b.className='opt-btn'; b.textContent=opt;
+      b.onclick=()=>{ document.querySelectorAll('#opts .opt-btn').forEach(x=>x.classList.add('dim')); b.classList.remove('dim'); b.classList.add(i===p.answer?'correct':'wrong'); feedbackThenNext(i===p.answer, p.options[p.answer]); };
+      optsEl.appendChild(b);
+    });
+  }
+}
+
+/* ---- finish level ---- */
+async function finishLevel(reachedEnd){
+  const lv = RUN.level;
+  const ratio = RUN.total>0 ? RUN.correct/RUN.total : 0;
+  const passed = ratio >= (lv.pass||0.6);
+  S.lives = 3;
+  if(!S.hintsUsedByLevel) S.hintsUsedByLevel={};
+  S.hintsUsedByLevel[lv.id] = RUN.usedHint;
+
+  if(passed){
+    if(!S.completed.includes(lv.id)) S.completed.push(lv.id);
+    if(!S.completed.includes(lv.id)) {} // no-op safeguard
+    S.keys = S.completed.length;
+    if(lv.id === S.unlockedLevel && S.unlockedLevel < 10) S.unlockedLevel++;
+    else if(lv.id >= S.unlockedLevel && S.unlockedLevel<10) S.unlockedLevel = Math.max(S.unlockedLevel, lv.id+1);
+    checkAchievements(lv, RUN);
+    await saveProgress();
+    await saveLeaderboard();
+    if(lv.id===10){ SFX.win(); showWinSequence(); return; }
+    SFX.key();
+    showKeyModal(lv);
+  } else {
+    SFX.lose();
+    await saveProgress();
+    showRetryModal(lv, ratio);
+  }
+}
+
+function checkAchievements(lv, run){
+  const add = (id)=>{ if(!S.achievements.includes(id)) S.achievements.push(id); };
+  if(lv.id===1) add('first_step');
+  if(S.completed.length>=5) add('knowledge_hunter');
+  if(lv.type==='riddle' && !run.usedHint) add('puzzle_master');
+  if(run.total>0 && run.correct===run.total) add('speed_runner');
+  if(lv.id===10) add('master_pengetahuan');
+}
+
+function showKeyModal(lv){
+  const ov = document.createElement('div'); ov.className='overlay';
+  ov.innerHTML = `<div class="modal">
+    <div class="key-glow">🗝️</div>
+    <h2>SELAMAT! KAMU MENDAPATKAN<br>KUNCI PENGETAHUAN!</h2>
+    <p>Level ${lv.id} — ${esc(lv.name)} telah selesai.</p>
+    <div class="row center" style="justify-content:center;margin-top:8px;">
+      <div class="chip">🗝️ ${S.keys}/10</div><div class="chip mono">⭐ ${S.score}</div>
+    </div>
+    <div class="row" style="justify-content:center;margin-top:18px;">
+      <button class="btn btn-gold" id="nextLevelBtn">➡️ Lanjutkan</button>
+      <button class="btn btn-outline" id="mapBtn">🗺️ Peta</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#nextLevelBtn').onclick = ()=>{
+    document.body.removeChild(ov);
+    const nextId = Math.min(lv.id+1,10);
+    if(nextId!==lv.id && (S.completed.includes(lv.id))) startLevel(nextId);
+    else { UI.screen='map'; render(); }
+  };
+  ov.querySelector('#mapBtn').onclick = ()=>{ document.body.removeChild(ov); UI.screen='map'; render(); };
+}
+
+function showRetryModal(lv, ratio){
+  const ov = document.createElement('div'); ov.className='overlay';
+  ov.innerHTML = `<div class="modal">
+    <div style="font-size:50px;">📜</div>
+    <h2>BELUM BERHASIL</h2>
+    <p>Kamu menjawab benar ${Math.round(ratio*100)}%. Coba pelajari lagi materi dan tantang dirimu sekali lagi!</p>
+    <div class="row" style="justify-content:center;margin-top:14px;">
+      <button class="btn btn-gold" id="retryBtn">🔁 Coba Lagi</button>
+      <button class="btn btn-outline" id="mapBtn2">🗺️ Peta</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#retryBtn').onclick = ()=>{ document.body.removeChild(ov); startLevel(lv.id); };
+  ov.querySelector('#mapBtn2').onclick = ()=>{ document.body.removeChild(ov); UI.screen='map'; render(); };
+}
+
+function showWinSequence(){
+  const ov = document.createElement('div'); ov.className='overlay';
+  ov.innerHTML = `<div class="modal"><div style="font-size:60px;">🎉🏆🎉</div><h2>PETUALANGAN SELESAI!</h2><p>Menyusun harta pengetahuanmu…</p></div>`;
+  document.body.appendChild(ov);
+  setTimeout(()=>{ document.body.removeChild(ov); UI.screen='result'; render(); }, 1600);
+}
+
+/* ================= FINAL RESULT ================= */
+function titleFor(score){
+  if(score>=7000) return {t:"MASTER PENGETAHUAN", ic:"🏆"};
+  if(score>=5000) return {t:"PETUALANG CERDAS", ic:"🥇"};
+  if(score>=3000) return {t:"PENJELAJAH", ic:"🥈"};
+  return {t:"PEMULA", ic:"🥉"};
+}
+function renderFinalResult(){
+  const playMin = S.startedAt ? Math.max(1,Math.round((Date.now()-S.startedAt)/60000)) : 0;
+  const tt = titleFor(S.score);
+  app.innerHTML = `
+  <div class="screen">
+    <div class="wrap center">
+      <div style="font-size:60px;">🎉🏆🎉</div>
+      <h1 class="display" style="color:var(--gold-bright);">PETUALANGAN SELESAI!</h1>
+      <p style="font-size:18px;">Selamat, <b>${esc(S.name)}</b>!</p>
+      <p class="small-muted" style="color:var(--parchment-dark);">Kamu telah berhasil melewati seluruh tantangan.</p>
+      <div class="card" style="margin-top:20px;">
+        <div class="row" style="justify-content:center;gap:26px;flex-wrap:wrap;">
+          <div><div style="font-size:26px;">🗝️</div><b>${S.keys}/10</b><div class="small-muted">Kunci</div></div>
+          <div><div style="font-size:26px;">⭐</div><b>${S.score}</b><div class="small-muted">Skor</div></div>
+          <div><div style="font-size:26px;">${tt.ic}</div><b>${tt.t}</b><div class="small-muted">Gelar</div></div>
+          <div><div style="font-size:26px;">⏱️</div><b>${playMin} menit</b><div class="small-muted">Waktu</div></div>
+        </div>
+      </div>
+      <div class="row center" style="justify-content:center;margin-top:20px;">
+        <button class="btn btn-mystic" id="certBtn">🎓 Lihat Sertifikat</button>
+        <button class="btn btn-gold" id="playAgain">🔄 Main Lagi</button>
+        <button class="btn btn-outline" id="viewMap">🗺️ Lihat Peta</button>
+        <button class="btn btn-outline" id="viewAch">🏆 Lihat Prestasi</button>
+      </div>
+    </div>
+  </div>`;
+  on('certBtn','click',()=>{SFX.click(); renderCertificateOverlay();});
+  on('playAgain','click', async ()=>{
+    const name=S.name, kelas=S.kelas, absen=S.absen, audio=S.audio;
+    S = defaultProgress(); S.name=name; S.kelas=kelas; S.absen=absen; S.audio=audio; S.startedAt=Date.now();
+    await saveProgress(); UI.screen='map'; render();
+  });
+  on('viewMap','click',()=>{UI.screen='map';render();});
+  on('viewAch','click',()=>{UI.screen='achievements';render();});
+  // Tampilkan sertifikat otomatis saat pertama kali menuntaskan petualangan
+  if(!S.certShown){ S.certShown = true; saveProgress(); renderCertificateOverlay(); }
+}
+
+/* ================= SERTIFIKAT ================= */
+function renderCertificateOverlay(){
+  const tt = titleFor(S.score);
+  const dateStr = new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  const ov = document.createElement('div'); ov.className='overlay';
+  ov.innerHTML = `
+  <div class="modal cert-modal" id="certPrintArea">
+    <div class="cert-border">
+      <div class="cert-ornament">🏆</div>
+      <h1 class="cert-title">SERTIFIKAT PENGHARGAAN</h1>
+      <p class="cert-sub">Dengan bangga diberikan kepada</p>
+      <h2 class="cert-name">${esc(S.name)}</h2>
+      <p class="cert-kelas">${S.kelas?('Kelas '+esc(S.kelas)):''}${(S.kelas&&S.absen)?' • ':''}${S.absen?('No. Absen '+esc(S.absen)):''}</p>
+      <p class="cert-body">Atas keberhasilannya menyelesaikan seluruh 10 wilayah tantangan dalam permainan edukasi <b>"Petualangan Mencari Harta Pengetahuan"</b>${C.school?(' di '+esc(C.school)):''}.</p>
+      <div class="cert-stats">
+        <div><b>${S.score}</b>Poin Akhir</div>
+        <div><b>${S.keys}/10</b>Kunci Pengetahuan</div>
+        <div><b>${tt.ic} ${tt.t}</b>Gelar Pencapaian</div>
+      </div>
+      <div class="cert-footer">
+        <div class="cert-date">Diterbitkan pada<br>${dateStr}</div>
+        <div class="cert-sign">
+          <div class="cert-sign-line">${esc(C.teacherName||'—')}</div>
+          <div class="cert-sign-role">Guru Pengampu${C.school?(' — '+esc(C.school)):''}</div>
+        </div>
+      </div>
+    </div>
+    <div class="cert-actions row center" style="justify-content:center;">
+      <button class="btn btn-gold btn-sm" id="printCert">🖨️ Cetak / Simpan sebagai PDF</button>
+      <button class="btn btn-outline btn-sm" id="closeCert">✖️ Tutup</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#printCert').onclick = ()=>{ window.print(); };
+  ov.querySelector('#closeCert').onclick = ()=>{ document.body.removeChild(ov); };
+}
+
+/* ================= ACHIEVEMENTS ================= */
+function renderAchievements(){
+  app.innerHTML = `
+  <div class="topbar"><button class="btn btn-outline btn-sm" id="back1">← Kembali</button><div class="spacer"></div></div>
+  <div class="screen" style="padding-top:20px;">
+   <div class="wrap">
+    <h2 class="map-title">🏆 Prestasi</h2>
+    <div class="card">
+     <div class="badge-grid">
+      ${ACHIEVEMENTS.map(a=>{
+        const got = S.achievements.includes(a.id);
+        return `<div class="badge ${got?'':'locked'}"><div class="ic">${a.icon}</div><div style="font-weight:800;margin-top:6px;">${esc(a.name)}</div><div class="small-muted">${esc(a.desc)}</div></div>`;
+      }).join('')}
+     </div>
+    </div>
+   </div>
+  </div>`;
+  on('back1','click',()=>{UI.screen = S.name?'map':'splash'; render();});
+}
+
+/* ================= SETTINGS ================= */
+function renderSettings(){
+  app.innerHTML = `
+  <div class="topbar"><button class="btn btn-outline btn-sm" id="back2">← Kembali</button><div class="spacer"></div></div>
+  <div class="screen" style="padding-top:20px;">
+   <div class="wrap" style="max-width:520px;">
+    <h2 class="map-title">⚙️ Pengaturan</h2>
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:14px;">
+        <div><b>🔊 Suara Efek</b><div class="small-muted">Nyalakan/matikan efek suara permainan</div></div>
+        <div class="switch ${S.audio?'on':''}" id="audioSwitch"></div>
+      </div>
+      <div class="row" style="justify-content:space-between;margin-bottom:14px;">
+        <div><b>👤 Nama Petualang</b><div class="small-muted">${esc(S.name)} ${S.kelas?(' • Kelas '+esc(S.kelas)):''} ${S.absen?(' • No. '+esc(S.absen)):''}</div></div>
+      </div>
+      <div class="row" style="justify-content:space-between;margin-bottom:14px;">
+        <div><b>💾 Mode Penyimpanan</b><div class="small-muted">${hasCloudStorage() ? 'Tersambung ke akun Claude (progres tersinkron)' : 'Penyimpanan browser — progres tersimpan di perangkat/browser ini saja'}</div></div>
+      </div>
+      <button class="btn btn-forest btn-sm" id="saveBtnSet">💾 Simpan Game Sekarang</button>
+      <div style="height:10px;"></div>
+      <button class="btn btn-danger btn-sm" id="resetProgress">🗑️ Reset Progress Saya</button>
+    </div>
+   </div>
+  </div>`;
+  on('back2','click',()=>{UI.screen='map';render();});
+  on('saveBtnSet','click', async ()=>{ SFX.click(); await manualSave(); });
+  on('audioSwitch','click', async ()=>{ S.audio=!S.audio; await saveProgress(); render(); });
+  on('resetProgress','click', async ()=>{
+    if(confirm('Yakin ingin mereset seluruh progress permainanmu?')){
+      const name=S.name,kelas=S.kelas,absen=S.absen,audio=S.audio;
+      S = defaultProgress(); S.name=name;S.kelas=kelas;S.absen=absen;S.audio=audio;
+      await saveProgress(); UI.screen='map'; render();
+    }
+  });
+}
+
+/* ================= TEACHER DASHBOARD ================= */
+function renderTeacher(){
+  if(!UI.teachTab) UI.teachTab='materi';
+  const tabs = [['materi','📘 Materi'],['bank','🗂️ Bank Soal'],['siswa','📊 Hasil Siswa'],['pengaturan','🛠️ Pengaturan Game']];
+  app.innerHTML = `
+  <div class="topbar"><button class="btn btn-outline btn-sm" id="backT">← Keluar Mode Guru</button><div class="spacer"></div><div class="chip">🧑‍🏫 Dashboard Guru</div></div>
+  <div class="screen" style="padding-top:20px;align-items:flex-start;">
+   <div class="wrap">
+    <h2 class="map-title">Dashboard Guru</h2>
+    <div class="teach-tabs">${tabs.map(t=>`<div class="teach-tab ${UI.teachTab===t[0]?'active':''}" data-tab="${t[0]}">${t[1]}</div>`).join('')}</div>
+    <div id="teachBody" class="card"></div>
+   </div>
+  </div>`;
+  on('backT','click',()=>{ UI.screen = S.name?'map':'splash'; render(); });
+  document.querySelectorAll('.teach-tab').forEach(t=>{ t.onclick=()=>{ UI.teachTab=t.dataset.tab; render(); }; });
+  const body = document.getElementById('teachBody');
+  if(UI.teachTab==='materi') renderTeachMateri(body);
+  else if(UI.teachTab==='bank') renderTeachBank(body);
+  else if(UI.teachTab==='siswa') renderTeachSiswa(body);
+  else renderTeachSettings(body);
+}
+
+function renderTeachMateri(body){
+  body.innerHTML = `
+   <label class="field-label">Judul Materi</label>
+   <input type="text" id="mJudul" value="${esc(C.materi.judul)}">
+   <div style="height:12px;"></div>
+   <label class="field-label">Materi Pembelajaran</label>
+   <textarea id="mIsi" rows="10">${esc(C.materi.isi)}</textarea>
+   <div style="height:12px;"></div>
+   <div class="row">
+     <div style="flex:1;min-width:140px;"><label class="field-label">Jumlah Level</label><input type="number" id="mLevels" value="10" min="10" max="10" disabled></div>
+     <div style="flex:1;min-width:140px;"><label class="field-label">Soal / Level</label><input type="number" id="mPerLevel" value="5" min="3" max="8"></div>
+   </div>
+   <div style="height:16px;"></div>
+   <div class="row">
+     <button class="btn btn-forest" id="saveMateri">💾 Simpan Materi</button>
+     <button class="btn btn-mystic" id="genSoal">✨ Buat Soal Otomatis (AI)</button>
+   </div>
+   <div id="genStatus" class="small-muted" style="margin-top:10px;"></div>
+   <p class="small-muted" style="margin-top:14px;">Materi ini dapat berasal dari mata pelajaran apa pun (TIK, Bahasa Indonesia, IPA, IPS, Matematika, Prakarya, dll). Sistem akan membuat soal berdasarkan isi materi ini saja, tanpa keluar dari konteks materi.</p>
+  `;
+  on('saveMateri','click', async ()=>{
+    C.materi.judul = document.getElementById('mJudul').value.trim() || C.materi.judul;
+    C.materi.isi = document.getElementById('mIsi').value.trim() || C.materi.isi;
+    await saveContent();
+    document.getElementById('genStatus').textContent = '✅ Materi tersimpan.';
+  });
+  on('genSoal','click', ()=>generateQuestionsFromMateri());
+}
+
+async function generateQuestionsFromMateri(){
+  const status = document.getElementById('genStatus');
+  const judul = document.getElementById('mJudul').value.trim() || C.materi.judul;
+  const isi = document.getElementById('mIsi').value.trim() || C.materi.isi;
+  const perLevel = parseInt(document.getElementById('mPerLevel').value)||5;
+  status.textContent = '⏳ Sedang membuat soal berdasarkan materi… mohon tunggu.';
+  const schemaGuide = `
+Buatkan soal untuk game edukasi 10 level dengan tingkat kesulitan meningkat, HANYA berdasarkan materi berikut, jangan membuat fakta baru di luar materi.
+Level 1: type "mc" (pilihan ganda, 4 opsi)
+Level 2: type "sentence" (paragraf pendek dari materi + pertanyaan "temukan kalimat..." + array sentences 3 opsi)
+Level 3: type "riddle" (clues array 3 petunjuk bertahap + 4 opsi jawaban)
+Level 4: type "scramble" (array kata acak "words" + array "correct" urutan kalimat benar, 5-8 kata)
+Level 5: type "matching" (HANYA 1 objek soal berisi array "pairs" masing masing {term,def}, minimal 4 pasangan)
+Level 6: type "tf" (statement + answer boolean)
+Level 7: type "maze" (HANYA 1 objek soal berisi array "gates" masing masing {q,options(4),answer(index)}, minimal 5 gates)
+Level 8: type "detective" (array evidence 3 kalimat + q + 4 options + answer index)
+Level 9 & 10: type "boss" (HANYA 1 objek soal berisi array "parts" gabungan beberapa {type:"mc"|"tf"|"riddle", ...field sesuai tipe}, minimal 4 parts, level 10 lebih dramatis dan sulit)
+
+Jumlah soal per level (untuk level bertipe mc/sentence/riddle/scramble/tf/detective, bukan matching/maze/boss): ${perLevel} soal.
+Semua teks dalam Bahasa Indonesia, mudah dipahami siswa SMA, tidak mengulang pertanyaan yang sama antar level.
+
+Judul materi: ${judul}
+Isi materi:
+"""
+${isi}
+"""
+
+WAJIB balas HANYA dengan JSON valid (tanpa markdown, tanpa penjelasan) dengan struktur:
+{"levels":[
+ {"id":1,"type":"mc","questions":[{"q":"","options":["","","",""],"answer":0,"hint":""}, ...]},
+ {"id":2,"type":"sentence","questions":[{"paragraph":"","q":"","sentences":["","",""],"answer":0,"hint":""}, ...]},
+ {"id":3,"type":"riddle","questions":[{"clues":["","",""],"options":["","","",""],"answer":0,"hint":""}, ...]},
+ {"id":4,"type":"scramble","questions":[{"words":["",""],"correct":["",""],"hint":""}, ...]},
+ {"id":5,"type":"matching","questions":[{"pairs":[{"term":"","def":""}],"hint":""}]},
+ {"id":6,"type":"tf","questions":[{"statement":"","answer":true,"hint":""}, ...]},
+ {"id":7,"type":"maze","questions":{"gates":[{"q":"","options":["","","",""],"answer":0}],"hint":""}},
+ {"id":8,"type":"detective","questions":[{"evidence":["","",""],"q":"","options":["","","",""],"answer":0,"hint":""}, ...]},
+ {"id":9,"type":"boss","questions":{"parts":[{"type":"mc","q":"","options":["","","",""],"answer":0}]}},
+ {"id":10,"type":"boss","questions":{"parts":[{"type":"mc","q":"","options":["","","",""],"answer":0}]}}
+]}`;
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 4000,
+        messages: [{ role: "user", content: schemaGuide }]
+      })
+    });
+    const data = await response.json();
+    let text = (data.content||[]).map(b=>b.text||'').join('');
+    text = text.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(text);
+    if(!parsed.levels || !Array.isArray(parsed.levels)) throw new Error('format tidak sesuai');
+    // merge into existing levels, keep name/icon/diff/time/pass, replace questions
+    parsed.levels.forEach(pl=>{
+      const target = C.levels.find(l=>l.id===pl.id);
+      if(target && pl.questions){ target.questions = pl.questions; if(pl.type) target.type = pl.type; }
+    });
+    C.materi.judul = judul; C.materi.isi = isi;
+    await saveContent();
+    status.textContent = '✅ Soal otomatis berhasil dibuat dan disimpan! Cek di menu Bank Soal untuk mengedit.';
+  }catch(e){
+    console.error(e);
+    status.textContent = '⚠️ Gagal membuat soal otomatis ('+(e.message||'error')+'). Soal contoh bawaan tetap dapat digunakan, atau coba lagi.';
+  }
+}
+
+function renderTeachBank(body){
+  let html = `<p class="small-muted">Pilih level untuk melihat dan mengedit soal.</p><div class="row" id="lvSelector" style="margin-bottom:14px;"></div><div id="qList"></div>`;
+  body.innerHTML = html;
+  const sel = document.getElementById('lvSelector');
+  if(!UI.bankLevel) UI.bankLevel = 1;
+  C.levels.forEach(lv=>{
+    const b = document.createElement('button');
+    b.className='btn btn-sm '+(UI.bankLevel===lv.id?'btn-gold':'btn-outline');
+    b.textContent = 'L'+lv.id;
+    b.onclick = ()=>{ UI.bankLevel=lv.id; renderTeachBank(body); };
+    sel.appendChild(b);
+  });
+  const lv = C.levels.find(l=>l.id===UI.bankLevel);
+  const qList = document.getElementById('qList');
+  qList.innerHTML = `<h3>Level ${lv.id} — ${esc(lv.name)} <span class="small-muted">(${lv.type})</span></h3><div id="qItems"></div>
+    <button class="btn btn-forest btn-sm" id="saveBank" style="margin-top:10px;">💾 Simpan Perubahan</button>`;
+  const items = document.getElementById('qItems');
+
+  function textarea(id,val){ return `<textarea id="${id}" rows="2">${esc(val)}</textarea>`; }
+
+  if(lv.type==='matching'){
+    const pairs = lv.questions[0].pairs;
+    items.innerHTML = pairs.map((p,i)=>`
+      <div class="qedit-item">
+        <label class="field-label">Istilah ${i+1}</label><input type="text" data-k="term" data-i="${i}" value="${esc(p.term)}">
+        <label class="field-label">Pengertian ${i+1}</label>${textarea('def_'+i,p.def)}
+      </div>`).join('');
+  } else if(lv.type==='maze'){
+    const gates = lv.questions.gates;
+    items.innerHTML = gates.map((g,i)=>`
+      <div class="qedit-item">
+        <label class="field-label">Gerbang ${i+1} — Pertanyaan</label><input type="text" data-gk="q" data-gi="${i}" value="${esc(g.q)}">
+        ${g.options.map((o,oi)=>`<label class="field-label">Opsi ${oi+1}${oi===g.answer?' (Jawaban Benar)':''}</label><input type="text" data-gk="opt" data-gi="${i}" data-oi="${oi}" value="${esc(o)}">`).join('')}
+      </div>`).join('');
+  } else if(lv.type==='boss'){
+    const parts = lv.questions.parts;
+    items.innerHTML = parts.map((p,i)=>{
+      if(p.type==='mc') return `<div class="qedit-item"><span class="small-muted">Bagian ${i+1} • MC</span><label class="field-label">Pertanyaan</label><input type="text" data-pk="q" data-pi="${i}" value="${esc(p.q)}">${p.options.map((o,oi)=>`<label class="field-label">Opsi ${oi+1}${oi===p.answer?' ✅':''}</label><input type="text" data-pk="opt" data-pi="${i}" data-oi="${oi}" value="${esc(o)}">`).join('')}</div>`;
+      if(p.type==='tf') return `<div class="qedit-item"><span class="small-muted">Bagian ${i+1} • Benar/Salah</span><label class="field-label">Pernyataan</label>${textarea('bstmt_'+i,p.statement)}<label class="field-label">Jawaban: ${p.answer?'BENAR':'SALAH'}</label></div>`;
+      if(p.type==='riddle') return `<div class="qedit-item"><span class="small-muted">Bagian ${i+1} • Teka-teki</span><label class="field-label">Petunjuk (pisahkan baris)</label><textarea data-pk="clues" data-pi="${i}" rows="3">${esc((p.clues||[]).join('\\n'))}</textarea>${(p.options||[]).map((o,oi)=>`<label class="field-label">Opsi ${oi+1}${oi===p.answer?' ✅':''}</label><input type="text" data-pk="opt" data-pi="${i}" data-oi="${oi}" value="${esc(o)}">`).join('')}</div>`;
+      return '';
+    }).join('');
+  } else {
+    // mc, sentence, riddle, scramble, tf, detective — array of questions
+    items.innerHTML = lv.questions.map((q,i)=>{
+      if(lv.type==='mc' || lv.type==='detective'){
+        const evid = lv.type==='detective' ? `<label class="field-label">Bukti (pisahkan baris)</label><textarea data-k="evidence" data-i="${i}" rows="3">${esc((q.evidence||[]).join('\\n'))}</textarea>` : '';
+        return `<div class="qedit-item">${evid}<label class="field-label">Pertanyaan ${i+1}</label><input type="text" data-k="q" data-i="${i}" value="${esc(q.q)}">
+          ${q.options.map((o,oi)=>`<label class="field-label">Opsi ${oi+1}${oi===q.answer?' ✅ Benar':''}</label><input type="text" data-k="opt" data-i="${i}" data-oi="${oi}" value="${esc(o)}">`).join('')}
+          <label class="field-label">Hint</label><input type="text" data-k="hint" data-i="${i}" value="${esc(q.hint||'')}">
+        </div>`;
+      }
+      if(lv.type==='sentence'){
+        return `<div class="qedit-item"><label class="field-label">Paragraf</label><textarea data-k="paragraph" data-i="${i}" rows="3">${esc(q.paragraph)}</textarea>
+        <label class="field-label">Pertanyaan</label><input type="text" data-k="q" data-i="${i}" value="${esc(q.q)}">
+        ${q.sentences.map((s,si)=>`<label class="field-label">Kalimat ${si+1}${si===q.answer?' ✅':''}</label><textarea data-k="sent" data-i="${i}" data-oi="${si}" rows="2">${esc(s)}</textarea>`).join('')}</div>`;
+      }
+      if(lv.type==='riddle'){
+        return `<div class="qedit-item"><label class="field-label">Petunjuk (pisahkan baris)</label><textarea data-k="clues" data-i="${i}" rows="3">${esc(q.clues.join('\\n'))}</textarea>
+        ${q.options.map((o,oi)=>`<label class="field-label">Opsi ${oi+1}${oi===q.answer?' ✅':''}</label><input type="text" data-k="opt" data-i="${i}" data-oi="${oi}" value="${esc(o)}">`).join('')}</div>`;
+      }
+      if(lv.type==='scramble'){
+        return `<div class="qedit-item"><label class="field-label">Kalimat Jawaban Benar (pisahkan spasi)</label><input type="text" data-k="correct" data-i="${i}" value="${esc(q.correct.join(' '))}"></div>`;
+      }
+      if(lv.type==='tf'){
+        return `<div class="qedit-item"><label class="field-label">Pernyataan ${i+1}</label><textarea data-k="statement" data-i="${i}" rows="2">${esc(q.statement)}</textarea>
+        <label class="field-label">Jawaban</label><select data-k="tfans" data-i="${i}"><option value="true" ${q.answer?'selected':''}>BENAR</option><option value="false" ${!q.answer?'selected':''}>SALAH</option></select></div>`;
+      }
+      return '';
+    }).join('');
+  }
+
+  on('saveBank','click', async ()=>{
+    if(lv.type==='matching'){
+      const pairs = lv.questions[0].pairs;
+      document.querySelectorAll('[data-k="term"]').forEach(inp=>{ pairs[inp.dataset.i].term = inp.value; });
+      pairs.forEach((p,i)=>{ const t=document.getElementById('def_'+i); if(t) p.def=t.value; });
+    } else if(lv.type==='maze'){
+      const gates = lv.questions.gates;
+      document.querySelectorAll('[data-gk="q"]').forEach(inp=>{ gates[inp.dataset.gi].q = inp.value; });
+      document.querySelectorAll('[data-gk="opt"]').forEach(inp=>{ gates[inp.dataset.gi].options[inp.dataset.oi] = inp.value; });
+    } else if(lv.type==='boss'){
+      const parts = lv.questions.parts;
+      document.querySelectorAll('[data-pk="q"]').forEach(inp=>{ parts[inp.dataset.pi].q = inp.value; });
+      document.querySelectorAll('[data-pk="opt"]').forEach(inp=>{ parts[inp.dataset.pi].options[inp.dataset.oi] = inp.value; });
+      parts.forEach((p,i)=>{ const t=document.getElementById('bstmt_'+i); if(t) p.statement=t.value; });
+      document.querySelectorAll('[data-pk="clues"]').forEach(inp=>{ parts[inp.dataset.pi].clues = inp.value.split('\\n').filter(Boolean); });
+    } else {
+      document.querySelectorAll('[data-k="q"]').forEach(inp=>{ lv.questions[inp.dataset.i].q = inp.value; });
+      document.querySelectorAll('[data-k="opt"]').forEach(inp=>{ lv.questions[inp.dataset.i].options[inp.dataset.oi] = inp.value; });
+      document.querySelectorAll('[data-k="hint"]').forEach(inp=>{ lv.questions[inp.dataset.i].hint = inp.value; });
+      document.querySelectorAll('[data-k="paragraph"]').forEach(inp=>{ lv.questions[inp.dataset.i].paragraph = inp.value; });
+      document.querySelectorAll('[data-k="sent"]').forEach(inp=>{ lv.questions[inp.dataset.i].sentences[inp.dataset.oi] = inp.value; });
+      document.querySelectorAll('[data-k="clues"]').forEach(inp=>{ lv.questions[inp.dataset.i].clues = inp.value.split('\\n').filter(Boolean); });
+      document.querySelectorAll('[data-k="correct"]').forEach(inp=>{ lv.questions[inp.dataset.i].correct = inp.value.trim().split(/\\s+/); });
+      document.querySelectorAll('[data-k="statement"]').forEach(inp=>{ lv.questions[inp.dataset.i].statement = inp.value; });
+      document.querySelectorAll('[data-k="tfans"]').forEach(sel2=>{ lv.questions[sel2.dataset.i].answer = sel2.value==='true'; });
+      document.querySelectorAll('[data-k="evidence"]').forEach(inp=>{ lv.questions[inp.dataset.i].evidence = inp.value.split('\\n').filter(Boolean); });
+    }
+    await saveContent();
+    alert('Perubahan soal Level '+lv.id+' berhasil disimpan.');
+  });
+}
+
+async function renderTeachSiswa(body){
+  body.innerHTML = `<p class="small-muted">Memuat hasil siswa…</p>`;
+  let keys = [];
+  try{ keys = await sList('leaderboard:', true); }catch(e){ keys=[]; }
+  if(!keys.length){ body.innerHTML = `<p>Belum ada data siswa yang menyelesaikan level. Data akan muncul setelah siswa bermain.</p>`; return; }
+  const rows = [];
+  for(const k of keys){
+    const d = await sGet(k, true);
+    if(d) rows.push(d);
+  }
+  rows.sort((a,b)=>b.score-a.score);
+  body.innerHTML = `<table class="data"><thead><tr><th>Nama</th><th>Kelas</th><th>Level Selesai</th><th>Kunci</th><th>Skor</th></tr></thead>
+   <tbody>${rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.kelas||'-')}</td><td>${r.levelsCompleted}/10</td><td>${r.keys}/10</td><td class="mono">${r.score}</td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderTeachSettings(body){
+  body.innerHTML = `
+   <p class="small-muted">Pengaturan tampil di sini bersifat contoh dasar; poin/nyawa/hint dapat disesuaikan langsung pada soal atau kode jika diperlukan penyesuaian lanjutan.</p>
+   <div class="row" style="margin-top:10px;">
+    <div style="flex:1;min-width:160px;"><label class="field-label">Jawaban Benar</label><input type="text" value="+100 poin" disabled></div>
+    <div style="flex:1;min-width:160px;"><label class="field-label">Jawaban Salah</label><input type="text" value="-1 ❤️ Nyawa" disabled></div>
+    <div style="flex:1;min-width:160px;"><label class="field-label">Gunakan Hint</label><input type="text" value="-10 poin" disabled></div>
+   </div>
+   <div style="height:18px;"></div>
+   <h3 style="margin:0 0 10px;">🎓 Data untuk Sertifikat Kelulusan</h3>
+   <label class="field-label">Nama Guru Pengampu</label>
+   <input type="text" id="teacherNameInput" value="${esc(C.teacherName||'')}">
+   <div style="height:10px;"></div>
+   <label class="field-label">Nama Sekolah</label>
+   <input type="text" id="schoolInput" value="${esc(C.school||'')}">
+   <div style="height:14px;"></div>
+   <button class="btn btn-mystic btn-sm" id="saveCertInfo">💾 Simpan Data Sertifikat</button>
+   <div style="height:18px;"></div>
+   <button class="btn btn-danger" id="resetContent">🗑️ Kembalikan Materi & Soal ke Contoh Bawaan</button>
+  `;
+  on('saveCertInfo','click', async ()=>{
+    C.teacherName = document.getElementById('teacherNameInput').value.trim();
+    C.school = document.getElementById('schoolInput').value.trim();
+    await saveContent();
+    showToast('Data sertifikat berhasil disimpan.');
+  });
+  on('resetContent','click', async ()=>{
+    if(confirm('Kembalikan materi dan seluruh soal ke data contoh bawaan?')){
+      C = { materi: DEFAULT_MATERI, levels: defaultLevels(), teacherName: C.teacherName, school: C.school };
+      await saveContent();
+      alert('Materi & soal dikembalikan ke contoh bawaan.');
+      render();
+    }
+  });
+}
+
+/* ---------------- boot ---------------- */
+init();
+</script>
+</body>
+</html>
